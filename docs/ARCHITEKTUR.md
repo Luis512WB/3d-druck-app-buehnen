@@ -43,6 +43,7 @@ Eine einzige, selbst betriebene Web-Anwendung: ein Prozess, eine Datenbankdatei,
 │   │   │   ├── page.tsx       Startseite / Übersicht
 │   │   │   ├── stuecke/       Liste, [id], neu
 │   │   │   ├── auftraege/     Liste/Board, [id], neu
+│   │   │   ├── bibliothek/    Maßbibliothek: Liste, [id], neu (Phase 1b)
 │   │   │   ├── planung/       Zeitleiste der Drucker        (Phase 2)
 │   │   │   ├── drucker/       Druckerverwaltung             (Phase 2)
 │   │   │   ├── anfragen/      Formular für Abteilungen      (Phase 4)
@@ -60,6 +61,7 @@ Eine einzige, selbst betriebene Web-Anwendung: ein Prozess, eine Datenbankdatei,
 │   │   ├── stuecke.ts
 │   │   ├── auftraege.ts
 │   │   ├── anhaenge.ts
+│   │   ├── bibliothek.ts
 │   │   ├── druckjobs.ts
 │   │   └── benutzer.ts
 │   └── lib/

@@ -70,7 +70,20 @@ Bisher werden Aufträge in der Notion-Datenbank „3D-Druck Aufträge · Opernha
 - Hinweis, wenn Maße den Bauraum überschreiten oder das Material nicht zum Drucker passt.
 - Ergebnis je Job: Erfolgreich / Fehlgeschlagen, tatsächlicher Verbrauch und Dauer.
 
-### 7. Anfragen aus Abteilungen (Phase 4)
+### 7. Maßbibliothek (Phase 1b)
+
+Nachschlagewerk für Standardmaße, die im Alltag immer wieder gebraucht werden – unabhängig von Stücken und Aufträgen.
+
+- Beispiele: Kabelverschraubungen/Zugentlastungen (M12, M16, M20 …), DMX-/XLR-Anschlüsse und Einbauausschnitte, powerCON/Schuko-Einbaubuchsen, Gewinde und Kernlöcher, Rohr- und Traversendurchmesser, Schrauben- und Mutternmaße.
+- Eintrag mit Titel, Kategorie, Beschreibung, Maßtabelle, Bildern/Zeichnungen, Dateien (z. B. fertiges CAD-Teil als STEP) und Quelle (Datenblatt, Norm, selbst gemessen).
+- Größenreihen in einem Eintrag: eine Zeile je Variante (z. B. M12 / M16 / M20), nicht ein Eintrag pro Größe.
+- **Druckhinweis** je Eintrag: erprobte Zugaben und Toleranzen („Bohrung +0,3 mm bei PETG“).
+- Kennzeichnung, ob ein Maß **nachgemessen/erprobt** ist oder nur aus dem Datenblatt stammt.
+- Kategorien sind pflegbar; Suche über Titel, Kategorie und Schlagworte, am Handy schnell erreichbar.
+- **In Auftrag übernehmen:** Maße aus der Bibliothek mit einem Klick in die Maßtabelle eines Auftrags kopieren.
+- Die Bibliothek startet leer und wird selbst gefüllt; Werte werden nicht ungeprüft vorbefüllt.
+
+### 8. Anfragen aus Abteilungen (Phase 4)
 
 - Vereinfachtes Formular: Was wird gebraucht, für welches Stück, bis wann, Bilder/Skizzen.
 - Anfrage landet mit Status „Angefragt“ und wird von Admin/Bearbeiter angenommen, rückgefragt oder abgelehnt.

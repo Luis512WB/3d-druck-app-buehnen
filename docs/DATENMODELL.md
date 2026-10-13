@@ -11,6 +11,8 @@ Stueck 1 ──── n Auftrag 1 ──── n Druckjob n ──── 1 Druck
                   ├── n Anhang   (Bilder, CAD-, Slicer-Dateien)
                   └── n Notiz
 
+Bibliothekskategorie 1 ── n Bibliothekseintrag 1 ── n Mass / Anhang
+
 Abteilung 1 ── n Auftrag
 Benutzer  1 ── n Auftrag (erstellt von / zugewiesen an)
 Filament  1 ── n Druckjob        (ab Ausbaustufe „Filamentlager“)
@@ -67,24 +69,49 @@ Die Oberfläche zeigt Druckzeiten in Stunden (z. B. „4,2 h“), gespeichert wi
 
 ## Mass
 
-Benannte Einzelmaße zu einem Auftrag.
+Benannte Einzelmaße – zu einem Auftrag **oder** zu einem Eintrag der Maßbibliothek.
 
 | Feld | Typ | Hinweis |
 |---|---|---|
-| auftragId | → Auftrag | |
+| auftragId / bibliothekseintragId | → Auftrag / Bibliothekseintrag | genau eines gesetzt |
+| variante | Text | nur Bibliothek: Größe innerhalb einer Reihe, z. B. „M20“ |
+| geprueft | Ja/Nein | nur Bibliothek: nachgemessen/erprobt statt nur Datenblatt |
 | bezeichnung | Text | „Durchmesser Rohr“ |
 | wert | Zahl | |
 | einheit | Auswahl | mm (Standard), cm, m, ° |
 | notiz | Text | z. B. „mit Spiel +0,3“ |
 | reihenfolge | Ganzzahl | Sortierung |
 
-## Anhang
+## Bibliothekseintrag
 
-Metadaten zu einer Datei in `data/uploads`. Gehört zu einem Auftrag **oder** einem Stück.
+Standardteil oder Standardmaß in der Maßbibliothek, unabhängig von Stücken und Aufträgen.
 
 | Feld | Typ | Hinweis |
 |---|---|---|
-| auftragId / stueckId | → Auftrag / Stueck | genau eines gesetzt |
+| titel | Text, Pflicht | z. B. „Kabelverschraubung metrisch“, „DMX-Einbaubuchse 5-pol“ |
+| kategorieId | → Bibliothekskategorie | |
+| beschreibung | Langtext | |
+| druckhinweis | Langtext | erprobte Zugaben/Toleranzen, Material |
+| quelle | Text | Datenblatt, Norm, Link oder „selbst gemessen“ |
+| schlagworte | Text | für die Suche |
+| erstelltVonId | → Benutzer | |
+
+Maße (`Mass`) und Bilder/Zeichnungen/CAD-Dateien (`Anhang`) hängen wie beim Auftrag daran. „In Auftrag übernehmen“ **kopiert** die gewählten Maße – spätere Änderungen in der Bibliothek verändern bestehende Aufträge nicht.
+
+## Bibliothekskategorie
+
+| Feld | Typ | Hinweis |
+|---|---|---|
+| name | Text, eindeutig | Start: Kabelverschraubungen, Steckverbinder, Gewinde & Schrauben, Rohre & Traversen, Sonstiges |
+| reihenfolge | Ganzzahl | |
+
+## Anhang
+
+Metadaten zu einer Datei in `data/uploads`. Gehört zu einem Auftrag, einem Stück **oder** einem Bibliothekseintrag.
+
+| Feld | Typ | Hinweis |
+|---|---|---|
+| auftragId / stueckId / bibliothekseintragId | → Auftrag / Stueck / Bibliothekseintrag | genau eines gesetzt |
 | art | Auswahl | Bild, CAD, Slicer, Dokument, Sonstiges |
 | dateiname | Text | Originalname |
 | pfad | Text | relativer Pfad im Upload-Ordner |

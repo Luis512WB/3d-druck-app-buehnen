@@ -36,8 +36,8 @@ Leitbild: **schlicht, modern, ruhig.** Die Inhalte (Bilder, Maße, Status) stehe
 
 ## Navigation
 
-- **Handy:** Leiste unten – Übersicht · Stücke · Aufträge · Planung · Mehr. Schwebender „+“-Knopf für neuen Auftrag.
-- **Desktop:** Schmale Seitenleiste links mit denselben Punkten, Inhalt mittig mit begrenzter Breite; Detailseiten zweispaltig.
+- **Handy:** Leiste unten – Übersicht · Stücke · Aufträge · Maße · Mehr (Planung, Drucker, Einstellungen). Schwebender „+“-Knopf für neuen Auftrag.
+- **Desktop:** Schmale Seitenleiste links mit allen Punkten einzeln, Inhalt mittig mit begrenzter Breite; Detailseiten zweispaltig.
 
 ## Zentrale Ansichten
 
@@ -54,6 +54,8 @@ Leitbild: **schlicht, modern, ruhig.** Die Inhalte (Bilder, Maße, Status) stehe
 - Desktop: links Bildergalerie groß, rechts Maße und Druckdaten – gedacht für den zweiten Bildschirm neben dem CAD.
 
 **Neuer Auftrag (Handy)** – Titel, Stück, Abteilung, Priorität → Foto hinzufügen → Maße → speichern. Weitere Felder unter „Mehr Angaben“.
+
+**Maßbibliothek** – Suchfeld ganz oben, darunter Kategorien als Chips und die Einträge als kompakte Liste mit Miniaturbild. Eintrag: Zeichnung/Foto, Maßtabelle (Varianten als Zeilen, geprüfte Maße mit Häkchen), Druckhinweis hervorgehoben, Knopf „In Auftrag übernehmen“. Maße lassen sich antippen und kopieren.
 
 **Planung** – Zeitleiste: eine Zeile pro Drucker, Balken pro Druckjob, Tag-/Wochenansicht. Mobil als Liste je Drucker. Überschneidungen und Bauraum-Probleme deutlich markiert.
 

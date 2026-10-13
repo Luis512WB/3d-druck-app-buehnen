@@ -24,6 +24,14 @@ Jede Phase ergibt eine für sich nutzbare App. Spätere Phasen sind im Datenmode
 
 **Ziel:** *Otello* anlegen, auf der Bühne einen Auftrag mit Fotos und Maßen erfassen, am Rechner zur Konstruktion öffnen.
 
+## Phase 1b – Maßbibliothek
+
+- [ ] Einträge mit Kategorie, Maßtabelle (Varianten), Bildern, Dateien, Quelle, Druckhinweis
+- [ ] Kategorien verwalten, Suche
+- [ ] Maße aus der Bibliothek in einen Auftrag übernehmen
+
+**Ziel:** Maße einer Kabelverschraubung oder eines DMX-Einbauausschnitts einmal sauber hinterlegen und bei jedem Auftrag wiederverwenden.
+
 ## Phase 2 – Druckerplanung
 
 - [ ] Druckerverwaltung (Bauraum, Materialien, Zustand)

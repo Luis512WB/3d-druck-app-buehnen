@@ -6,6 +6,8 @@ Web-App zum Dokumentieren und Planen von 3D-Druck-Aufträgen am Theater – nutz
 
 Ein **Stück** anlegen (z. B. *Otello*), darunter **Aufträge** mit Abteilung, Priorität, Farbe, Filamentmenge, Maßen, Bildern und Notizen erfassen – und die Drucke anschließend auf die vorhandenen **Drucker** einplanen.
 
+Dazu kommt eine **Maßbibliothek** für Standardmaße aus dem Alltag (Kabelverschraubungen, DMX-Anschlüsse, Gewinde …).
+
 ## Typischer Ablauf
 
 1. Auf der Bühne am Handy: Stück wählen → neuer Auftrag → Fotos machen, Maße und Notizen eintragen → speichern.
