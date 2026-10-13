@@ -12,23 +12,26 @@ Jede Phase ergibt eine für sich nutzbare App. Spätere Phasen sind im Datenmode
 
 ## Phase 1 – Stücke und Aufträge (MVP)
 
-- [ ] Stücke: anlegen, bearbeiten, archivieren, Detailseite
-- [ ] Aufträge: anlegen, bearbeiten, duplizieren; Abteilung, Priorität, Status, Termin, Material, Farbe, Filamentmenge
-- [ ] Maße: Hauptmaße und Einzelmaße
-- [ ] Bilder: Upload/Kamera, Vorschaubilder, Galerie mit Vollbild
-- [ ] Notizen-Verlauf
-- [ ] Auftragsliste mit Filtern und Suche, Board nach Status
-- [ ] Startseite mit offenen und fälligen Aufträgen
-- [ ] Desktop-Ansicht für die Konstruktion, ZIP-Download, Druckansicht
-- [ ] PWA-Manifest, Backup-Skript
+- [x] Stücke: anlegen, bearbeiten, archivieren, Detailseite
+- [x] Aufträge: anlegen, bearbeiten, duplizieren; Abteilung, Priorität, Status, Termin, Material, Farbe, Filamentmenge
+- [x] Maße: Hauptmaße und Einzelmaße
+- [x] Bilder: Upload/Kamera, Vorschaubilder, Galerie mit Vollbild
+- [x] Notizen-Verlauf
+- [x] Auftragsliste mit Filtern und Suche
+- [ ] Board-Ansicht nach Status
+- [x] Startseite mit offenen und fälligen Aufträgen
+- [x] Desktop-Ansicht für die Konstruktion, ZIP-Download
+- [ ] Eigene Druckansicht (PDF)
+- [ ] Automatische Tests
+- [x] PWA-Manifest, Backup-Skript (`scripts/backup.ps1`), Start per Doppelklick (`Starten.bat`)
 
 **Ziel:** *Otello* anlegen, auf der Bühne einen Auftrag mit Fotos und Maßen erfassen, am Rechner zur Konstruktion öffnen.
 
 ## Phase 1b – Maßbibliothek
 
-- [ ] Einträge mit Kategorie, Maßtabelle (Varianten), Bildern, Dateien, Quelle, Druckhinweis
-- [ ] Kategorien verwalten, Suche
-- [ ] Maße aus der Bibliothek in einen Auftrag übernehmen
+- [x] Einträge mit Kategorie, Maßtabelle (Varianten), Bildern, Dateien, Quelle, Druckhinweis
+- [x] Kategorien anlegen, Suche
+- [x] Maße aus der Bibliothek in einen Auftrag übernehmen
 
 **Ziel:** Maße einer Kabelverschraubung oder eines DMX-Einbauausschnitts einmal sauber hinterlegen und bei jedem Auftrag wiederverwenden.
 

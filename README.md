@@ -29,12 +29,30 @@ Dazu kommt eine **Maßbibliothek** für Standardmaße aus dem Alltag (Kabelversc
 
 ## Stand
 
-Phase 0 (Grundgerüst) ist fertig: Anmeldung, Navigation für Handy und Desktop, Datenbank mit Startbestand (9 Abteilungen, 2 Drucker). Stücke, Aufträge und Maßbibliothek folgen laut [Roadmap](docs/ROADMAP.md).
+Nutzbar sind: Stücke, Aufträge (mit Bildern, Dateien, Maßen, Notizen, ZIP-Download), Maßbibliothek, Abteilungen und Kategorien. Die Druckerplanung folgt in Phase 2 der [Roadmap](docs/ROADMAP.md).
 
-## Einrichten (einmalig, auf einem neuen Rechner)
+## Starten
 
-1. `.env.example` nach `.env` kopieren und die Werte eintragen (Admin-E-Mail, Passwort, langer Zufallswert).
-2. Pakete installieren und Datenbank anlegen:
+Doppelklick auf **`Starten.bat`** im Projektordner. Das Fenster zeigt die Adressen an und muss offen bleiben, solange die App genutzt wird:
+
+- am Rechner: `http://localhost:3000`
+- am Handy im selben WLAN: `http://<IPv4-Adresse des Rechners>:3000`
+
+Anmelden mit der E-Mail und dem Passwort aus `.env`; das Passwort lässt sich unter *Einstellungen* ändern.
+
+## Daten und Sicherung
+
+Alle Nutzdaten liegen im Ordner `data/` (Datenbank `app.db` und `uploads/`). Dieser Ordner und `.env` werden **nicht** zu GitHub hochgeladen. Sichern:
+
+```bash
+powershell -File scripts/backup.ps1 -Ziel "D:\Sicherung\3D-Druck"
+```
+
+## Einrichten auf einem neuen Rechner
+
+1. Node.js installieren und das Repository herunterladen.
+2. `.env.example` nach `.env` kopieren und die Werte eintragen.
+3. Pakete installieren, Datenbank anlegen und Startbestand einspielen:
 
 ```bash
 npm install
@@ -48,12 +66,9 @@ npx prisma migrate deploy
 npx prisma db seed
 ```
 
-## Starten
+## Entwickeln
 
 ```bash
 npm run dev
 ```
 
-Danach im Browser `http://localhost:3000` öffnen und mit der E-Mail und dem Passwort aus `.env` anmelden.
-
-Die Nutzdaten liegen im Ordner `data/` (Datenbank und später Bilder). Dieser Ordner und `.env` werden nicht zu GitHub hochgeladen.
