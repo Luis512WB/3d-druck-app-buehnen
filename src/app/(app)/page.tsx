@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { PRIORITAET_RANG } from "@/lib/format";
 import { ABGESCHLOSSENE_STATUS } from "@/lib/werte";
 import { AUFTRAG_FUER_LISTE, AuftragsListe } from "@/components/auftraege/auftrags-liste";
-import { DruckerListe } from "@/components/drucker-liste";
+import { DRUCKER_MIT_LAUFENDEM_JOB, DruckerListe } from "@/components/drucker-liste";
 import { Abschnitt, KNOPF } from "@/components/ui/formular";
 import { Karte, Leerzustand, Seitenkopf } from "@/components/ui/seite";
 
@@ -15,7 +15,7 @@ export default async function Uebersicht() {
     db.auftrag.findMany({ where: { status: { notIn: ABGESCHLOSSENE_STATUS } }, include: AUFTRAG_FUER_LISTE }),
     db.stueck.count({ where: { status: { not: "ARCHIVIERT" } } }),
     db.bibliothekseintrag.count(),
-    db.drucker.findMany({ orderBy: { name: "asc" } }),
+    db.drucker.findMany({ orderBy: { name: "asc" }, include: DRUCKER_MIT_LAUFENDEM_JOB }),
   ]);
 
   // Wichtigstes zuerst: Priorität, dann Deadline.

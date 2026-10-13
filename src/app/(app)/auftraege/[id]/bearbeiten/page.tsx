@@ -13,7 +13,7 @@ export default async function AuftragBearbeiten({ params }: { params: Promise<{ 
   if (!auftrag) notFound();
 
   // Archivierte Stücke und ausgeblendete Abteilungen bleiben wählbar, wenn der Auftrag sie schon nutzt.
-  const [stuecke, abteilungen] = await Promise.all([
+  const [stuecke, abteilungen, drucker, laufend] = await Promise.all([
     db.stueck.findMany({
       where: { OR: [{ status: { not: "ARCHIVIERT" } }, { id: auftrag.stueckId ?? 0 }] },
       orderBy: { titel: "asc" },
@@ -22,6 +22,12 @@ export default async function AuftragBearbeiten({ params }: { params: Promise<{ 
       where: { OR: [{ aktiv: true }, { id: auftrag.abteilungId ?? 0 }] },
       orderBy: { name: "asc" },
     }),
+    db.drucker.findMany({
+      where: { zustand: { not: "AUSSER_BETRIEB" } },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, zustand: true },
+    }),
+    db.druckjob.findFirst({ where: { auftragId: auftrag.id, status: "LAEUFT" } }),
   ]);
 
   return (
@@ -31,6 +37,8 @@ export default async function AuftragBearbeiten({ params }: { params: Promise<{ 
         auftrag={auftrag}
         stuecke={stuecke.map((s) => ({ id: s.id, name: s.titel }))}
         abteilungen={abteilungen.map((a) => ({ id: a.id, name: a.name }))}
+        drucker={drucker}
+        druckerId={laufend?.druckerId}
       />
     </>
   );

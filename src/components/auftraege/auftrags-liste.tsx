@@ -9,6 +9,7 @@ export const AUFTRAG_FUER_LISTE = {
   stueck: { select: { titel: true } },
   abteilung: { select: { name: true, farbeHex: true } },
   anhaenge: { where: { art: "BILD", vorschauPfad: { not: null } }, take: 1, orderBy: { id: "asc" }, select: { id: true } },
+  druckjobs: { where: { status: "LAEUFT" }, take: 1, select: { drucker: { select: { name: true } } } },
 } satisfies Prisma.AuftragInclude;
 
 type AuftragInListe = Prisma.AuftragGetPayload<{ include: typeof AUFTRAG_FUER_LISTE }>;
@@ -43,7 +44,10 @@ export function AuftragsListe({ auftraege, ohneStueck }: { auftraege: AuftragInL
                 )}
               </div>
               <div className="mt-1.5 flex flex-wrap gap-1.5">
-                <Chip farbe={statusFarbe(a.status)}>{AUFTRAG_STATUS[a.status as AuftragStatus] ?? a.status}</Chip>
+                <Chip farbe={statusFarbe(a.status)}>
+                  {AUFTRAG_STATUS[a.status as AuftragStatus] ?? a.status}
+                  {a.status === "IM_DRUCK" && a.druckjobs[0] && ` · ${a.druckjobs[0].drucker.name}`}
+                </Chip>
                 <Chip farbe={PRIORITAET_FARBE[a.prioritaet]}>
                   {PRIORITAETEN[a.prioritaet as Prioritaet] ?? a.prioritaet}
                 </Chip>

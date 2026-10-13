@@ -10,9 +10,14 @@ export default async function NeuerAuftrag({ searchParams }: { searchParams: Pro
   await erfordereBenutzer("ADMIN", "BEARBEITER");
   const vorauswahl = Number((await searchParams).stueck) || undefined;
 
-  const [stuecke, abteilungen] = await Promise.all([
+  const [stuecke, abteilungen, drucker] = await Promise.all([
     db.stueck.findMany({ where: { status: { not: "ARCHIVIERT" } }, orderBy: { titel: "asc" } }),
     db.abteilung.findMany({ where: { aktiv: true }, orderBy: { name: "asc" } }),
+    db.drucker.findMany({
+      where: { zustand: { not: "AUSSER_BETRIEB" } },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, zustand: true },
+    }),
   ]);
 
   return (
@@ -22,6 +27,7 @@ export default async function NeuerAuftrag({ searchParams }: { searchParams: Pro
         stuecke={stuecke.map((s) => ({ id: s.id, name: s.titel }))}
         abteilungen={abteilungen.map((a) => ({ id: a.id, name: a.name }))}
         stueckVorauswahl={vorauswahl}
+        drucker={drucker}
       />
     </>
   );

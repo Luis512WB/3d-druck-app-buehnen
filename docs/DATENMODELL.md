@@ -177,6 +177,8 @@ Ein geplanter oder gelaufener Druck auf genau einem Drucker. Ein Auftrag kann me
 | filamentId | → Filament | optional, späterer Ausbau |
 | notiz | Text | z. B. Fehlerursache |
 
+**Status „Im Druck“:** Ein Auftrag kann nur auf „Im Druck“ gesetzt werden, wenn ein Drucker gewählt ist. Dabei entsteht ein Druckjob mit Status „Läuft“. Verlässt der Auftrag „Im Druck“, wird der Job beendet: „Erfolgreich“ bei Nachbearbeitung/Fertig/Geliefert, sonst „Abgesagt“.
+
 **Regel:** Zwei Jobs desselben Druckers dürfen sich zeitlich nicht überschneiden (Warnung, bewusst überstimmbar).
 
 ## Benutzer

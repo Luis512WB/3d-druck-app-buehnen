@@ -22,13 +22,45 @@ async function mitNummerAnlegen(daten: Omit<Prisma.AuftragUncheckedCreateInput, 
   });
 }
 
+// "Im Druck" gehört immer zu genau einem Drucker. Festgehalten wird das als laufender Druckjob,
+// damit die Druckerplanung (Phase 2) auf denselben Daten aufbaut.
+const NACH_DEM_DRUCK = ["NACHBEARBEITUNG", "FERTIG", "GELIEFERT"];
+
+async function druckerPruefen(auftragId: number | null, status: string, druckerId: number | null) {
+  if (status !== "IM_DRUCK") return null;
+  if (druckerId) {
+    return (await db.drucker.findUnique({ where: { id: druckerId } })) ? null : "Drucker nicht gefunden.";
+  }
+  const laeuft = auftragId ? await db.druckjob.findFirst({ where: { auftragId, status: "LAEUFT" } }) : null;
+  return laeuft ? null : "Bitte den Drucker auswählen, auf dem gedruckt wird.";
+}
+
+async function druckjobAbgleichen(auftragId: number, vorher: string | null, status: string, druckerId: number | null) {
+  if (status === "IM_DRUCK") {
+    const laeuft = await db.druckjob.findFirst({ where: { auftragId, status: "LAEUFT" } });
+    if (!laeuft && druckerId) {
+      await db.druckjob.create({ data: { auftragId, druckerId, status: "LAEUFT", startTatsaechlich: new Date() } });
+    } else if (laeuft && druckerId && laeuft.druckerId !== druckerId) {
+      await db.druckjob.update({ where: { id: laeuft.id }, data: { druckerId } });
+    }
+  } else if (vorher === "IM_DRUCK") {
+    // Weiter im Ablauf = Druck gelungen; zurück, pausiert oder abgebrochen = Druck nicht zu Ende geführt.
+    await db.druckjob.updateMany({
+      where: { auftragId, status: "LAEUFT" },
+      data: { status: NACH_DEM_DRUCK.includes(status) ? "ERFOLGREICH" : "ABGESAGT", endeTatsaechlich: new Date() },
+    });
+  }
+}
+
 export async function auftragSpeichern(_: FormZustand, formData: FormData): Promise<FormZustand> {
   const benutzer = await erfordereBenutzer("ADMIN", "BEARBEITER");
 
   const eingabe = AuftragSchema.safeParse(Object.fromEntries(formData));
   if (!eingabe.success) return { fehler: ersterFehler(eingabe.error) };
 
-  const { id, druckzeitGeschaetztH, druckzeitTatsaechlichH, erhaltenAm, stueckzahl, ...rest } = eingabe.data;
+  const { id, druckerId, druckzeitGeschaetztH, druckzeitTatsaechlichH, erhaltenAm, stueckzahl, ...rest } = eingabe.data;
+  const druckerFehler = await druckerPruefen(id, rest.status, druckerId);
+  if (druckerFehler) return { fehler: druckerFehler };
   const daten = {
     ...rest,
     stueckzahl: stueckzahl ?? 1,
@@ -49,6 +81,7 @@ export async function auftragSpeichern(_: FormZustand, formData: FormData): Prom
       },
     });
     auftragId = id;
+    await druckjobAbgleichen(id, vorher.status, daten.status, druckerId);
   } else {
     const neu = await mitNummerAnlegen({
       ...daten,
@@ -56,36 +89,44 @@ export async function auftragSpeichern(_: FormZustand, formData: FormData): Prom
       abgeschlossenAm: abgeschlossen(daten.status) ? new Date() : null,
     });
     auftragId = neu.id;
+    await druckjobAbgleichen(neu.id, null, daten.status, druckerId);
   }
 
   revalidatePath("/", "layout");
   redirect(`/auftraege/${auftragId}`);
 }
 
-export async function statusAendern(formData: FormData) {
+export async function statusAendern(_: FormZustand, formData: FormData): Promise<FormZustand> {
   const benutzer = await erfordereBenutzer("ADMIN", "BEARBEITER");
   const id = Number(formData.get("id"));
   const status = String(formData.get("status"));
-  if (!(status in AUFTRAG_STATUS)) return;
+  const druckerId = Number(formData.get("druckerId")) || null;
+  if (!(status in AUFTRAG_STATUS)) return { fehler: "Ungültiger Status." };
 
   const vorher = await db.auftrag.findUnique({ where: { id }, select: { status: true, abgeschlossenAm: true } });
-  if (!vorher || vorher.status === status) return;
+  if (!vorher) return { fehler: "Auftrag nicht gefunden." };
 
-  await db.auftrag.update({
-    where: { id },
-    data: {
-      status,
-      abgeschlossenAm: abgeschlossen(status) ? (vorher.abgeschlossenAm ?? new Date()) : null,
-      notizen: {
-        create: {
-          art: "STATUSWECHSEL",
-          autorId: benutzer.id,
-          text: `${AUFTRAG_STATUS[vorher.status as AuftragStatus] ?? vorher.status} → ${AUFTRAG_STATUS[status as AuftragStatus]}`,
-        },
+  const druckerFehler = await druckerPruefen(id, status, druckerId);
+  if (druckerFehler) return { fehler: druckerFehler };
+
+  await druckjobAbgleichen(id, vorher.status, status, druckerId);
+
+  if (vorher.status !== status) {
+    const drucker = status === "IM_DRUCK" && druckerId ? await db.drucker.findUnique({ where: { id: druckerId } }) : null;
+    const von = AUFTRAG_STATUS[vorher.status as AuftragStatus] ?? vorher.status;
+    const nach = AUFTRAG_STATUS[status as AuftragStatus] + (drucker ? ` (${drucker.name})` : "");
+    await db.auftrag.update({
+      where: { id },
+      data: {
+        status,
+        abgeschlossenAm: abgeschlossen(status) ? (vorher.abgeschlossenAm ?? new Date()) : null,
+        notizen: { create: { art: "STATUSWECHSEL", autorId: benutzer.id, text: `${von} → ${nach}` } },
       },
-    },
-  });
+    });
+  }
+
   revalidatePath("/", "layout");
+  return { ok: true };
 }
 
 export async function auftragDuplizieren(formData: FormData) {

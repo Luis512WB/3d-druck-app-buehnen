@@ -12,18 +12,18 @@ import {
   istUeberfaellig,
   zahl,
 } from "@/lib/format";
-import { AUFTRAG_STATUS, PRIORITAETEN, UMFANG, type Prioritaet } from "@/lib/werte";
+import { PRIORITAETEN, UMFANG, type Prioritaet } from "@/lib/werte";
 import {
   auftragDuplizieren,
   auftragLoeschen,
   notizHinzufuegen,
   notizLoeschen,
-  statusAendern,
 } from "@/server/auftraege";
+import { StatusAuswahl } from "@/components/auftraege/status-auswahl";
 import { AnhangBereich } from "@/components/anhaenge/anhang-bereich";
 import { MassBereich } from "@/components/masse/mass-bereich";
-import { Abschnitt, EINGABE, KNOPF_KLEIN, KNOPF_ZWEIT, TEXTFELD } from "@/components/ui/formular";
-import { AbsendeKnopf, AutoAuswahl, BestaetigenKnopf } from "@/components/ui/knoepfe";
+import { Abschnitt, KNOPF_KLEIN, KNOPF_ZWEIT, TEXTFELD } from "@/components/ui/formular";
+import { AbsendeKnopf, BestaetigenKnopf } from "@/components/ui/knoepfe";
 import { Chip, Karte } from "@/components/ui/seite";
 
 export default async function AuftragDetail({ params }: { params: Promise<{ id: string }> }) {
@@ -36,10 +36,16 @@ export default async function AuftragDetail({ params }: { params: Promise<{ id: 
       masse: { orderBy: { reihenfolge: "asc" } },
       anhaenge: { orderBy: { id: "asc" } },
       notizen: { orderBy: { erstelltAm: "desc" }, include: { autor: { select: { name: true } } } },
+      druckjobs: { where: { status: "LAEUFT" }, take: 1, select: { druckerId: true } },
     },
   });
   if (!auftrag) notFound();
   const a = auftrag;
+  const drucker = await db.drucker.findMany({
+    where: { zustand: { not: "AUSSER_BETRIEB" } },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, zustand: true },
+  });
 
   const hatHauptmasse = a.laengeMm != null || a.breiteMm != null || a.hoeheMm != null;
   const daten: [string, React.ReactNode][] = [
@@ -93,16 +99,14 @@ export default async function AuftragDetail({ params }: { params: Promise<{ id: 
         <h1 className="mt-1 text-2xl font-semibold tracking-tight">{a.titel}</h1>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <form action={statusAendern}>
-            <input type="hidden" name="id" value={a.id} />
-            <AutoAuswahl name="status" defaultValue={a.status} aria-label="Status" className={`${EINGABE} w-auto pr-8`}>
-              {Object.entries(AUFTRAG_STATUS).map(([wert, name]) => (
-                <option key={wert} value={wert}>
-                  {name}
-                </option>
-              ))}
-            </AutoAuswahl>
-          </form>
+          <StatusAuswahl
+            // Neu aufbauen, sobald sich der gespeicherte Stand ändert (auch durch ein anderes Gerät).
+            key={`${a.status}-${a.druckjobs[0]?.druckerId ?? ""}`}
+            auftragId={a.id}
+            status={a.status}
+            druckerId={a.druckjobs[0]?.druckerId ?? null}
+            drucker={drucker}
+          />
           <Chip farbe={PRIORITAET_FARBE[a.prioritaet]}>
             Priorität {PRIORITAETEN[a.prioritaet as Prioritaet] ?? a.prioritaet}
           </Chip>

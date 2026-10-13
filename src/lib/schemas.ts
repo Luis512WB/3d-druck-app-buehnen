@@ -50,6 +50,7 @@ export const AuftragSchema = z.object({
   umfang: auswahl(UMFANG),
   prioritaet: auswahl(PRIORITAETEN),
   status: auswahl(AUFTRAG_STATUS),
+  druckerId: id,
   erhaltenAm: datum,
   faelligAm: datum,
   stueckzahl: ganzzahl,

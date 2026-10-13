@@ -1,12 +1,13 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import type { Auftrag } from "@prisma/client";
 import { datumFuerEingabe, stundenFuerEingabe, zahlFuerEingabe } from "@/lib/format";
 import type { FormZustand } from "@/lib/typen";
 import { AUFTRAG_STATUS, MATERIALIEN, PRIORITAETEN, UMFANG } from "@/lib/werte";
 import { auftragSpeichern } from "@/server/auftraege";
 import { EINGABE, Fehler, Feld, KNOPF, TEXTFELD } from "@/components/ui/formular";
+import { druckerName, type DruckerAuswahl } from "./status-auswahl";
 
 type Auswahl = { id: number; name: string };
 
@@ -15,14 +16,19 @@ export function AuftragFormular({
   stuecke,
   abteilungen,
   stueckVorauswahl,
+  drucker,
+  druckerId,
 }: {
   auftrag?: Auftrag;
   stuecke: Auswahl[];
   abteilungen: Auswahl[];
   stueckVorauswahl?: number;
+  drucker: DruckerAuswahl[];
+  druckerId?: number | null;
 }) {
   const [zustand, aktion, laeuft] = useActionState<FormZustand, FormData>(auftragSpeichern, {});
   const a = auftrag;
+  const [status, setStatus] = useState(a?.status ?? "ANGEFRAGT");
   const dezimal = { inputMode: "decimal" as const, className: EINGABE };
 
   return (
@@ -71,11 +77,11 @@ export function AuftragFormular({
       </div>
 
       {/* Beim Anlegen am Handy eingeklappt: erst das Nötigste, der Rest später. */}
-      <details open={Boolean(a)} className="rounded-xl border border-linie bg-flaeche">
+      <details open={Boolean(a) || status === "IM_DRUCK"} className="rounded-xl border border-linie bg-flaeche">
         <summary className="cursor-pointer px-4 py-3 text-sm font-medium">Mehr Angaben</summary>
         <div className="grid gap-4 border-t border-linie p-4 sm:grid-cols-2">
           <Feld label="Status">
-            <select name="status" defaultValue={a?.status ?? "ANGEFRAGT"} className={EINGABE}>
+            <select name="status" value={status} onChange={(e) => setStatus(e.target.value)} className={EINGABE}>
               {Object.entries(AUFTRAG_STATUS).map(([wert, name]) => (
                 <option key={wert} value={wert}>
                   {name}
@@ -83,6 +89,18 @@ export function AuftragFormular({
               ))}
             </select>
           </Feld>
+          {status === "IM_DRUCK" && (
+            <Feld label="Drucker" hinweis="Pflicht bei „Im Druck“">
+              <select name="druckerId" required defaultValue={druckerId ?? ""} className={EINGABE}>
+                <option value="">Drucker wählen …</option>
+                {drucker.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {druckerName(d)}
+                  </option>
+                ))}
+              </select>
+            </Feld>
+          )}
           <Feld label="Umfang">
             <select name="umfang" defaultValue={a?.umfang ?? "KONSTRUKTION_UND_DRUCK"} className={EINGABE}>
               {Object.entries(UMFANG).map(([wert, name]) => (
