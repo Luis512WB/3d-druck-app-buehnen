@@ -4,6 +4,9 @@ Kurzes Protokoll der Grundsatzentscheidungen. Neue Einträge oben anfügen.
 
 ## Getroffen
 
+### E-10 · Next.js ohne „Cache Components“ (13.10.2026)
+In `next.config.ts` ist `cacheComponents` abgeschaltet. **Grund:** Jede Seite liegt hinter der Anmeldung und zeigt frische Daten aus der Datenbank; das neue Modell verlangt dafür in jeder Seite eigene Lade-Grenzen, ohne dass eine interne App mit wenigen Nutzern davon profitiert. **Zu beachten:** Laut Next.js-Dokumentation entfällt die Option in der nächsten Hauptversion – vor einem Versionssprung muss das neu bewertet werden.
+
 ### E-09 · Zunächst ohne Server (13.10.2026)
 Entwickelt und genutzt wird vorerst lokal auf dem eigenen Rechner; der Code wird auf GitHub vorbereitet. Parallel läuft die Anfrage an die Haus-IT, ob ein interner Server möglich ist (O-1). **Grund:** Loslegen können, ohne auf die Server-Klärung zu warten – die Architektur ist für beide Wege gleich.
 

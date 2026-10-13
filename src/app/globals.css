@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+/* Farben und Formen: docs/DESIGN.md */
+:root {
+  --hintergrund: #fafafa;
+  --flaeche: #ffffff;
+  --linie: #e5e7eb;
+  --schrift: #111827;
+  --gedaempft: #6b7280;
+  --akzent: #2563eb;
+  --akzent-schrift: #ffffff;
+  --akzent-zart: #eff6ff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --hintergrund: #0f1113;
+    --flaeche: #181b1f;
+    --linie: #2a2e34;
+    --schrift: #f3f4f6;
+    --gedaempft: #9ca3af;
+    --akzent: #60a5fa;
+    --akzent-schrift: #0f1113;
+    --akzent-zart: #172033;
+  }
+}
+
+@theme inline {
+  --color-hintergrund: var(--hintergrund);
+  --color-flaeche: var(--flaeche);
+  --color-linie: var(--linie);
+  --color-schrift: var(--schrift);
+  --color-gedaempft: var(--gedaempft);
+  --color-akzent: var(--akzent);
+  --color-akzent-schrift: var(--akzent-schrift);
+  --color-akzent-zart: var(--akzent-zart);
+  --font-sans: Inter, ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  background: var(--hintergrund);
+  color: var(--schrift);
+  font-family: var(--font-sans);
+}

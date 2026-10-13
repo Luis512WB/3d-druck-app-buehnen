@@ -17,6 +17,8 @@ Web-App zur Dokumentation und Planung von 3D-Druck-Aufträgen an einem Theater. 
 
 Next.js (App Router) · TypeScript · Tailwind CSS · Prisma mit SQLite · Datei-Uploads im lokalen Ordner `data/uploads`.
 
+Die installierte Next.js-Version weicht vom Trainingswissen ab: vor Änderungen an Routing, Caching oder Server Actions die passende Anleitung unter `node_modules/next/dist/docs/` lesen (siehe [AGENTS.md](AGENTS.md)). `cacheComponents` ist bewusst aus (E-10).
+
 ## Befehle
 
 | Zweck | Befehl |
@@ -24,7 +26,7 @@ Next.js (App Router) · TypeScript · Tailwind CSS · Prisma mit SQLite · Datei
 | Entwicklungsserver | `npm run dev` |
 | Produktions-Build | `npm run build` und `npm run start` |
 | Typprüfung / Lint | `npm run typecheck` / `npm run lint` |
-| Tests | `npm test` |
+| Tests | noch nicht eingerichtet (Vitest/Playwright ab Phase 1) |
 | DB-Migration anlegen | `npx prisma migrate dev --name <name>` |
 | Beispieldaten | `npx prisma db seed` |
 

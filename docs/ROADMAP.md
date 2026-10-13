@@ -2,13 +2,13 @@
 
 Jede Phase ergibt eine für sich nutzbare App. Spätere Phasen sind im Datenmodell schon vorbereitet, werden aber erst gebaut, wenn sie dran sind.
 
-## Phase 0 – Grundgerüst
+## Phase 0 – Grundgerüst (erledigt)
 
-- [ ] Next.js-Projekt mit TypeScript und Tailwind anlegen, Git einrichten, `.gitignore` (inkl. `data/`)
-- [ ] Privates GitHub-Repository für den Code
-- [ ] Prisma + SQLite, erstes Schema, Seed (9 Abteilungen, Prusa XL, Bambu Lab P1S, Admin-Benutzer)
-- [ ] Grundlayout: Navigation mobil/Desktop, Hell/Dunkel, Basis-Komponenten
-- [ ] Anmeldung (ein Admin)
+- [x] Next.js-Projekt mit TypeScript und Tailwind anlegen, Git einrichten, `.gitignore` (inkl. `data/`)
+- [x] Privates GitHub-Repository für den Code
+- [x] Prisma + SQLite, erstes Schema, Seed (9 Abteilungen, Prusa XL, Bambu Lab P1S, Admin-Benutzer)
+- [x] Grundlayout: Navigation mobil/Desktop, Hell/Dunkel, Basis-Komponenten
+- [x] Anmeldung (ein Admin)
 
 ## Phase 1 – Stücke und Aufträge (MVP)
 

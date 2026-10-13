@@ -29,16 +29,31 @@ Dazu kommt eine **Maßbibliothek** für Standardmaße aus dem Alltag (Kabelversc
 
 ## Stand
 
-Planungsphase – es gibt noch keinen Code. Nächster Schritt ist Phase 0 der [Roadmap](docs/ROADMAP.md) (Grundgerüst aufsetzen).
+Phase 0 (Grundgerüst) ist fertig: Anmeldung, Navigation für Handy und Desktop, Datenbank mit Startbestand (9 Abteilungen, 2 Drucker). Stücke, Aufträge und Maßbibliothek folgen laut [Roadmap](docs/ROADMAP.md).
 
-## Starten (sobald das Grundgerüst steht)
+## Einrichten (einmalig, auf einem neuen Rechner)
+
+1. `.env.example` nach `.env` kopieren und die Werte eintragen (Admin-E-Mail, Passwort, langer Zufallswert).
+2. Pakete installieren und Datenbank anlegen:
 
 ```bash
 npm install
 ```
 
 ```bash
+npx prisma migrate deploy
+```
+
+```bash
+npx prisma db seed
+```
+
+## Starten
+
+```bash
 npm run dev
 ```
 
-Danach im Browser `http://localhost:3000` öffnen. Vom Handy im selben Netzwerk: `http://<Rechnername>:3000`.
+Danach im Browser `http://localhost:3000` öffnen und mit der E-Mail und dem Passwort aus `.env` anmelden.
+
+Die Nutzdaten liegen im Ordner `data/` (Datenbank und später Bilder). Dieser Ordner und `.env` werden nicht zu GitHub hochgeladen.

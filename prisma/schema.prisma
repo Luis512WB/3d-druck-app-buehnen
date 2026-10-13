@@ -1,0 +1,226 @@
+// Fachliche Beschreibung: docs/DATENMODELL.md
+// Auswahlfelder sind als String gespeichert; die erlaubten Werte stehen in src/lib/werte.ts.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Benutzer {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwortHash String
+  rolle        String   @default("BEARBEITER")
+  aktiv        Boolean  @default(true)
+  abteilungId  Int?
+  abteilung    Abteilung? @relation(fields: [abteilungId], references: [id])
+  erstelltAm   DateTime @default(now())
+  geaendertAm  DateTime @updatedAt
+
+  erstellteAuftraege   Auftrag[] @relation("erstelltVon")
+  zugewieseneAuftraege Auftrag[] @relation("zugewiesenAn")
+  notizen              Notiz[]
+  anhaenge             Anhang[]
+  bibliothekseintraege Bibliothekseintrag[]
+}
+
+model Abteilung {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  farbeHex    String?
+  aktiv       Boolean  @default(true)
+  erstelltAm  DateTime @default(now())
+  geaendertAm DateTime @updatedAt
+
+  auftraege Auftrag[]
+  benutzer  Benutzer[]
+}
+
+model Stueck {
+  id               Int       @id @default(autoincrement())
+  titel            String
+  sparte           String?
+  spielzeit        String?
+  premiere         DateTime?
+  spielstaette     String?
+  ansprechpersonen String?
+  notizen          String?
+  status           String    @default("AKTIV")
+  titelbildId      Int?      @unique
+  titelbild        Anhang?   @relation("titelbild", fields: [titelbildId], references: [id])
+  erstelltAm       DateTime  @default(now())
+  geaendertAm      DateTime  @updatedAt
+
+  auftraege Auftrag[]
+  anhaenge  Anhang[]  @relation("stueckAnhaenge")
+}
+
+model Auftrag {
+  id                       Int       @id @default(autoincrement())
+  nummer                   String    @unique
+  titel                    String
+  beschreibung             String?
+  stueckId                 Int?
+  stueck                   Stueck?   @relation(fields: [stueckId], references: [id])
+  abteilungId              Int?
+  abteilung                Abteilung? @relation(fields: [abteilungId], references: [id])
+  ansprechperson           String?
+  umfang                   String    @default("KONSTRUKTION_UND_DRUCK")
+  prioritaet               String    @default("MITTEL")
+  status                   String    @default("ANGEFRAGT")
+  erhaltenAm               DateTime  @default(now())
+  faelligAm                DateTime?
+  stueckzahl               Int       @default(1)
+  material                 String?
+  farbe                    String?
+  farbeHex                 String?
+  filamentGeschaetztG      Float?
+  filamentTatsaechlichG    Float?
+  druckzeitGeschaetztMin   Int?
+  druckzeitTatsaechlichMin Int?
+  laengeMm                 Float?
+  breiteMm                 Float?
+  hoeheMm                  Float?
+  nachbearbeitung          String?
+  erstelltVonId            Int?
+  erstelltVon              Benutzer? @relation("erstelltVon", fields: [erstelltVonId], references: [id])
+  zugewiesenAnId           Int?
+  zugewiesenAn             Benutzer? @relation("zugewiesenAn", fields: [zugewiesenAnId], references: [id])
+  abgeschlossenAm          DateTime?
+  erstelltAm               DateTime  @default(now())
+  geaendertAm              DateTime  @updatedAt
+
+  masse     Mass[]
+  anhaenge  Anhang[]
+  notizen   Notiz[]
+  druckjobs Druckjob[]
+
+  @@index([status])
+  @@index([stueckId])
+}
+
+model Mass {
+  id                   Int      @id @default(autoincrement())
+  auftragId            Int?
+  auftrag              Auftrag? @relation(fields: [auftragId], references: [id], onDelete: Cascade)
+  bibliothekseintragId Int?
+  bibliothekseintrag   Bibliothekseintrag? @relation(fields: [bibliothekseintragId], references: [id], onDelete: Cascade)
+  variante             String?
+  geprueft             Boolean  @default(false)
+  bezeichnung          String
+  wert                 Float
+  einheit              String   @default("mm")
+  notiz                String?
+  reihenfolge          Int      @default(0)
+  erstelltAm           DateTime @default(now())
+  geaendertAm          DateTime @updatedAt
+}
+
+model Anhang {
+  id                   Int      @id @default(autoincrement())
+  auftragId            Int?
+  auftrag              Auftrag? @relation(fields: [auftragId], references: [id], onDelete: Cascade)
+  stueckId             Int?
+  stueck               Stueck?  @relation("stueckAnhaenge", fields: [stueckId], references: [id], onDelete: Cascade)
+  bibliothekseintragId Int?
+  bibliothekseintrag   Bibliothekseintrag? @relation(fields: [bibliothekseintragId], references: [id], onDelete: Cascade)
+  art                  String   @default("BILD")
+  dateiname            String
+  pfad                 String
+  vorschauPfad         String?
+  mimeTyp              String
+  groesseBytes         Int
+  beschriftung         String?
+  hochgeladenVonId     Int?
+  hochgeladenVon       Benutzer? @relation(fields: [hochgeladenVonId], references: [id])
+  erstelltAm           DateTime @default(now())
+  geaendertAm          DateTime @updatedAt
+
+  titelbildVon Stueck? @relation("titelbild")
+}
+
+model Notiz {
+  id          Int      @id @default(autoincrement())
+  auftragId   Int
+  auftrag     Auftrag  @relation(fields: [auftragId], references: [id], onDelete: Cascade)
+  text        String
+  art         String   @default("NOTIZ")
+  autorId     Int?
+  autor       Benutzer? @relation(fields: [autorId], references: [id])
+  erstelltAm  DateTime @default(now())
+  geaendertAm DateTime @updatedAt
+}
+
+model Drucker {
+  id                Int      @id @default(autoincrement())
+  name              String   @unique
+  modell            String?
+  verfahren         String   @default("FDM")
+  bauraumXMm        Float?
+  bauraumYMm        Float?
+  bauraumZMm        Float?
+  duesenMm          Float?
+  // Kommagetrennt, z. B. "PLA,PETG,TPU"
+  materialien       String?
+  anzahlMaterialien Int      @default(1)
+  zustand           String   @default("BEREIT")
+  standort          String?
+  notizen           String?
+  erstelltAm        DateTime @default(now())
+  geaendertAm       DateTime @updatedAt
+
+  druckjobs Druckjob[]
+}
+
+model Druckjob {
+  id                Int       @id @default(autoincrement())
+  auftragId         Int
+  auftrag           Auftrag   @relation(fields: [auftragId], references: [id], onDelete: Cascade)
+  druckerId         Int
+  drucker           Drucker   @relation(fields: [druckerId], references: [id])
+  bezeichnung       String?
+  startGeplant      DateTime?
+  endeGeplant       DateTime?
+  startTatsaechlich DateTime?
+  endeTatsaechlich  DateTime?
+  status            String    @default("GEPLANT")
+  filamentG         Float?
+  notiz             String?
+  erstelltAm        DateTime  @default(now())
+  geaendertAm       DateTime  @updatedAt
+
+  @@index([druckerId, startGeplant])
+}
+
+model Bibliothekskategorie {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  reihenfolge Int      @default(0)
+  erstelltAm  DateTime @default(now())
+  geaendertAm DateTime @updatedAt
+
+  eintraege Bibliothekseintrag[]
+}
+
+model Bibliothekseintrag {
+  id            Int      @id @default(autoincrement())
+  titel         String
+  kategorieId   Int?
+  kategorie     Bibliothekskategorie? @relation(fields: [kategorieId], references: [id])
+  beschreibung  String?
+  druckhinweis  String?
+  quelle        String?
+  schlagworte   String?
+  erstelltVonId Int?
+  erstelltVon   Benutzer? @relation(fields: [erstelltVonId], references: [id])
+  erstelltAm    DateTime @default(now())
+  geaendertAm   DateTime @updatedAt
+
+  masse    Mass[]
+  anhaenge Anhang[]
+}
