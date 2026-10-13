@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>3D-Druck Bühnen · Vorschau</title>
+<!--
+  Vorschau-Version ohne Server: eine einzelne Seite, die alles im Browser des jeweiligen Geräts
+  speichert (IndexedDB). Es gibt keine Anmeldung und keinen Abgleich zwischen Geräten.
+  Die eigentliche App liegt unter src/ – diese Datei bildet nur ihre wichtigsten Abläufe nach.
+-->
+<style>
+:root{--hg:#fafafa;--fl:#fff;--li:#e5e7eb;--tx:#111827;--gd:#6b7280;--ak:#2563eb;--akt:#fff;--akz:#eff6ff;--rot:#dc2626}
+@media (prefers-color-scheme:dark){:root{--hg:#0f1113;--fl:#181b1f;--li:#2a2e34;--tx:#f3f4f6;--gd:#9ca3af;--ak:#60a5fa;--akt:#0f1113;--akz:#172033;--rot:#f87171}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{color-scheme:light dark}
+body{margin:0;background:var(--hg);color:var(--tx);font:16px/1.45 Inter,ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+h1{font-size:1.5rem;font-weight:600;letter-spacing:-.02em;margin:0}
+h2{font-size:.875rem;font-weight:500;color:var(--gd);margin:0}
+p{margin:0}
+main{max-width:64rem;margin:0 auto;padding:1.5rem 1rem 6.5rem}
+nav.unten{position:fixed;inset:auto 0 0 0;z-index:10;display:grid;grid-template-columns:repeat(5,1fr);background:var(--fl);border-top:1px solid var(--li);padding-bottom:env(safe-area-inset-bottom)}
+nav.unten a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:3.5rem;font-size:11px;color:var(--gd)}
+nav.seite{display:none}
+nav a.aktiv{color:var(--ak);font-weight:500}
+nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+@media (min-width:768px){
+  nav.unten{display:none}
+  nav.seite{display:flex;flex-direction:column;gap:.25rem;position:fixed;inset:0 auto 0 0;width:14rem;padding:1.25rem .75rem;background:var(--fl);border-right:1px solid var(--li)}
+  nav.seite b{padding:0 .75rem 1.25rem;font-size:.875rem}
+  nav.seite a{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:.5rem;font-size:.875rem;color:var(--gd)}
+  nav.seite a.aktiv{background:var(--akz)}
+  .rahmen{padding-left:14rem}
+  main{padding:2rem 2rem 2.5rem}
+}
+.kopf{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:1.5rem}
+.klein{font-size:.875rem}.gd{color:var(--gd)}.zahl{font-variant-numeric:tabular-nums}
+.karte{background:var(--fl);border:1px solid var(--li);border-radius:.75rem}
+.pad{padding:1rem}
+.zeilen>*+*{border-top:1px solid var(--li)}
+.abschnitt{margin-top:2rem}
+.abschnitt>.titel{display:flex;justify-content:space-between;align-items:center;gap:.75rem;margin-bottom:.75rem}
+.knopf,.knopf2,.knopf3{display:inline-flex;align-items:center;justify-content:center;height:2.75rem;padding:0 1.25rem;border-radius:.5rem;border:1px solid transparent;font:inherit;font-size:.875rem;font-weight:500;cursor:pointer;white-space:nowrap}
+.knopf{background:var(--ak);color:var(--akt)}
+.knopf2,.knopf3{background:var(--fl);border-color:var(--li);color:var(--tx)}
+.knopf3{height:2.25rem;padding:0 .75rem;font-weight:400}
+.rot{color:var(--rot)}
+input,select,textarea{display:block;width:100%;border:1px solid var(--li);border-radius:.5rem;background:var(--fl);color:var(--tx);font:inherit;padding:0 .75rem;outline:none}
+input,select{height:2.75rem}
+textarea{padding:.6rem .75rem;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--ak)}
+label{display:block;font-size:.875rem;font-weight:500}
+label>input,label>select,label>textarea{margin-top:.25rem;font-weight:400}
+label small{font-weight:400;color:var(--gd);margin-left:.35rem}
+.raster{display:grid;gap:1rem}
+.g2,.g3,.g6{display:grid;gap:.5rem}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g6{grid-template-columns:repeat(6,1fr)}
+.s2{grid-column:span 2}.s3{grid-column:span 3}.s4{grid-column:span 4}.s6{grid-column:span 6}
+@media (min-width:640px){.raster.zwei{grid-template-columns:1fr 1fr}.voll{grid-column:1/-1}.g2{grid-template-columns:1fr 1fr}}
+@media (min-width:1024px){.spalten{display:grid;grid-template-columns:1fr 1fr;gap:0 2rem}}
+.chip{display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--li);border-radius:99px;padding:.1rem .65rem;font-size:.75rem;color:var(--gd)}
+.chip i{width:.5rem;height:.5rem;border-radius:99px}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem}
+a.chip.gross{height:2.25rem;padding:0 .9rem;font-size:.875rem;background:var(--fl)}
+a.chip.an{border-color:var(--ak);background:var(--akz);color:var(--ak);font-weight:500}
+.zeile{display:flex;gap:.75rem;align-items:center;padding:.75rem 1rem}
+.zeile .mitte{flex:1;min-width:0}
+.kurz{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini{width:3.5rem;height:3.5rem;flex:none;border-radius:.5rem;border:1px solid var(--li);background:var(--hg);overflow:hidden}
+.mini img,.galerie img{width:100%;height:100%;object-fit:cover;display:block}
+.galerie{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+@media (min-width:640px){.galerie{grid-template-columns:repeat(4,1fr)}}
+.galerie>div{position:relative;aspect-ratio:1;border-radius:.5rem;border:1px solid var(--li);overflow:hidden;background:var(--hg);cursor:zoom-in}
+.galerie button{position:absolute;top:.25rem;right:.25rem}
+.x{display:grid;place-items:center;width:2rem;height:2rem;border:0;border-radius:.5rem;background:none;color:var(--gd);font:inherit;cursor:pointer;flex:none}
+.galerie .x{background:rgba(0,0,0,.55);color:#fff}
+.kacheln{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem}
+.kacheln b{display:block;font-size:1.6rem;font-weight:600}
+.daten{display:grid;grid-template-columns:1fr 1fr;gap:.75rem 1.5rem;font-size:.875rem}
+.leer{padding:3rem 1.5rem;text-align:center}
+.hinweis{border-color:var(--ak);background:var(--akz);font-size:.875rem;margin-bottom:1rem}
+.gross{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.95);display:flex;align-items:center;justify-content:center}
+.gross img{max-width:100%;max-height:100%}
+details>summary{cursor:pointer;padding:.75rem 1rem;font-size:.875rem;font-weight:500}
+.pre{white-space:pre-wrap}
+</style>
+</head>
+<body>
+<nav class="seite" id="nav-seite"></nav>
+<div class="rahmen"><main id="app"></main></div>
+<nav class="unten" id="nav-unten"></nav>
+
+<script>
+"use strict";
+
+// ---------- Auswahlwerte (wie in der App: src/lib/werte.ts) ----------
+const PRIO = { NIEDRIG: "Niedrig", MITTEL: "Mittel", HOCH: "Hoch", DRINGEND: "Dringend" };
+const PRIO_FARBE = { NIEDRIG: "#9ca3af", MITTEL: "#3b82f6", HOCH: "#f97316", DRINGEND: "#ef4444" };
+const PRIO_RANG = { DRINGEND: 0, HOCH: 1, MITTEL: 2, NIEDRIG: 3 };
+const STATUS = { ANGEFRAGT: "Angefragt", IN_PLANUNG: "In Planung", KONSTRUKTION: "Konstruktion", DRUCKBEREIT: "Druckbereit", IM_DRUCK: "Im Druck", NACHBEARBEITUNG: "Nachbearbeitung", FERTIG: "Fertig", GELIEFERT: "Geliefert", PAUSIERT: "Pausiert", ABGEBROCHEN: "Abgebrochen" };
+const ERLEDIGT = ["FERTIG", "GELIEFERT", "ABGEBROCHEN"];
+const UMFANG = { KONSTRUKTION_UND_DRUCK: "Konstruktion + Druck", NUR_DRUCK: "Nur Druck" };
+const MATERIAL = ["PLA", "PETG", "ABS", "ASA", "TPU", "Sonstiges"];
+const SPARTEN = ["Oper", "Schauspiel", "Tanz", "Konzert", "Sonstiges"];
+const STUECK_STATUS = { AKTIV: "Aktiv", IN_VORBEREITUNG: "In Vorbereitung", ABGESPIELT: "Abgespielt", ARCHIVIERT: "Archiviert" };
+const EINHEITEN = ["mm", "cm", "m", "°"];
+
+const START = () => ({
+  naechsteId: 1,
+  naechsteNummer: 1,
+  stuecke: [],
+  auftraege: [],
+  eintraege: [],
+  abteilungen: ["Beleuchtung", "Deko", "Maske", "Requisite", "Schlosserei", "Schneiderei", "Schreinerei", "Technik", "Ton"],
+  kategorien: ["Kabelverschraubungen", "Steckverbinder", "Gewinde & Schrauben", "Rohre & Traversen", "Sonstiges"],
+  drucker: [
+    { id: "xl", name: "Prusa XL", bauraum: "360 × 360 × 360 mm · 2 Materialien gleichzeitig" },
+    { id: "p1s", name: "Bambu Lab P1S", bauraum: "256 × 256 × 256 mm" },
+  ],
+});
+
+// ---------- Speicher: IndexedDB im Browser dieses Geräts ----------
+const speicher = new Promise((ok) => {
+  try {
+    const anfrage = indexedDB.open("druck-vorschau", 1);
+    anfrage.onupgradeneeded = () => anfrage.result.createObjectStore("kv");
+    anfrage.onsuccess = () => ok(anfrage.result);
+    anfrage.onerror = () => ok(null);
+  } catch { ok(null); }
+});
+async function kv(modus, zugriff) {
+  const db = await speicher;
+  if (!db) return undefined; // z. B. privater Modus: App läuft, vergisst aber alles beim Schließen
+  return new Promise((ok, fehler) => {
+    const t = db.transaction("kv", modus);
+    const a = zugriff(t.objectStore("kv"));
+    t.oncomplete = () => ok(a && a.result);
+    t.onerror = () => fehler(t.error);
+  });
+}
+const lesen = (k) => kv("readonly", (s) => s.get(k));
+const schreiben = (k, v) => kv("readwrite", (s) => s.put(v, k));
+const entfernen = (k) => kv("readwrite", (s) => s.delete(k));
+
+let Z = START();
+const sichern = () => schreiben("zustand", Z);
+const neueId = () => Z.naechsteId++;
+
+// ---------- Hilfen ----------
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const zahl = (v) => { const t = String(v ?? "").trim().replace(",", "."); return t === "" || isNaN(Number(t)) ? null : Number(t); };
+const fmt = (n) => (n == null ? "–" : new Intl.NumberFormat("de-DE", { maximumFractionDigits: 2 }).format(n));
+const datum = (iso) => (iso ? new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" }) : "–");
+const datumZeit = (iso) => new Date(iso).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+const heute = () => new Date().toISOString().slice(0, 10);
+const ueberfaellig = (a) => a.faelligAm && !ERLEDIGT.includes(a.status) && a.faelligAm < heute();
+const statusFarbe = (s) => (s === "IM_DRUCK" ? "#2563eb" : s === "FERTIG" || s === "GELIEFERT" ? "#16a34a" : s === "PAUSIERT" || s === "ABGEBROCHEN" ? "#9ca3af" : "#f59e0b");
+const optionen = (liste, gewaehlt, leer) =>
+  (leer != null ? `<option value="">${esc(leer)}</option>` : "") +
+  liste.map((o) => { const [w, n] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(w)}"${String(w) === String(gewaehlt ?? "") ? " selected" : ""}>${esc(n)}</option>`; }).join("");
+const chip = (text, farbe) => `<span class="chip">${farbe ? `<i style="background:${esc(farbe)}"></i>` : ""}${esc(text)}</span>`;
+const stueckVon = (a) => Z.stuecke.find((s) => s.id === a.stueckId);
+const druckerVon = (a) => Z.drucker.find((d) => d.id === a.druckerId);
+const sortiert = (liste) => [...liste].sort((a, b) => PRIO_RANG[a.prioritaet] - PRIO_RANG[b.prioritaet] || (a.faelligAm || "9").localeCompare(b.faelligAm || "9") || b.id - a.id);
+
+// ---------- Bilder ----------
+const bildUrls = new Map();
+async function bildSpeichern(datei) {
+  // Verkleinern spart Speicher: Handyfotos haben oft 12 Megapixel und mehr.
+  const bild = await createImageBitmap(datei);
+  const faktor = Math.min(1, 1600 / Math.max(bild.width, bild.height));
+  const leinwand = document.createElement("canvas");
+  leinwand.width = Math.round(bild.width * faktor);
+  leinwand.height = Math.round(bild.height * faktor);
+  leinwand.getContext("2d").drawImage(bild, 0, 0, leinwand.width, leinwand.height);
+  const blob = await new Promise((ok) => leinwand.toBlob(ok, "image/jpeg", 0.82));
+  const id = neueId();
+  await schreiben("bild:" + id, blob);
+  bildUrls.set(id, URL.createObjectURL(blob));
+  return id;
+}
+async function bildLoeschen(id) {
+  await entfernen("bild:" + id);
+  bildUrls.delete(id);
+}
+async function bilderEinsetzen() {
+  for (const img of document.querySelectorAll("img[data-bild]")) {
+    const id = Number(img.dataset.bild);
+    if (!bildUrls.has(id)) {
+      const blob = await lesen("bild:" + id);
+      if (blob) bildUrls.set(id, URL.createObjectURL(blob));
+    }
+    if (bildUrls.has(id)) img.src = bildUrls.get(id);
+  }
+}
+
+// ---------- Bausteine ----------
+const kopf = (titel, text, aktion) => `<header class="kopf"><div><h1>${esc(titel)}</h1>${text ? `<p class="klein gd" style="margin-top:.25rem">${esc(text)}</p>` : ""}</div>${aktion || ""}</header>`;
+const abschnitt = (titel, inhalt, aktion) => `<section class="abschnitt"><div class="titel"><h2>${esc(titel)}</h2>${aktion || ""}</div>${inhalt}</section>`;
+const leer = (titel, text) => `<div class="karte leer"><p style="font-weight:500">${esc(titel)}</p><p class="klein gd" style="margin-top:.25rem">${esc(text)}</p></div>`;
+const feld = (label, inhalt, hinweis, klasse) => `<label class="${klasse || ""}">${esc(label)}${hinweis ? `<small>${esc(hinweis)}</small>` : ""}${inhalt}</label>`;
+const eingabe = (name, wert, extra) => `<input name="${name}" value="${esc(wert ?? "")}" ${extra || ""}>`;
+
+function auftragsListe(liste, ohneStueck) {
+  return `<div class="karte zeilen">${liste.map((a) => {
+    const d = druckerVon(a);
+    return `<a class="zeile" href="#/auftraege/${a.id}" style="align-items:flex-start">
+      <div class="mini">${a.bilder[0] ? `<img data-bild="${a.bilder[0]}" alt="">` : ""}</div>
+      <div class="mitte">
+        <div style="display:flex;justify-content:space-between;gap:.75rem"><span class="kurz" style="font-weight:500">${esc(a.titel)}</span><span class="klein gd zahl">${esc(a.nummer)}</span></div>
+        <div class="klein gd kurz">${ohneStueck ? "" : esc(stueckVon(a)?.titel ?? "Allgemein")}${!ohneStueck && a.faelligAm ? " · " : ""}${a.faelligAm ? `<span class="${ueberfaellig(a) ? "rot" : ""}">bis ${datum(a.faelligAm)}${ueberfaellig(a) ? " (überfällig)" : ""}</span>` : ""}</div>
+        <div class="chips" style="margin-top:.4rem">
+          ${chip(STATUS[a.status] + (a.status === "IM_DRUCK" && d ? " · " + d.name : ""), statusFarbe(a.status))}
+          ${chip(PRIO[a.prioritaet], PRIO_FARBE[a.prioritaet])}
+          ${a.abteilung ? chip(a.abteilung) : ""}
+          ${a.material || a.farbe || a.filamentG != null ? chip([a.material, a.farbe, a.filamentG != null ? fmt(a.filamentG) + " g" : null].filter(Boolean).join(" · ")) : ""}
+        </div>
+      </div></a>`;
+  }).join("")}</div>`;
+}
+
+function massBereich(besitzer, art) {
+  const inBibliothek = art === "eintrag";
+  const zeilen = besitzer.masse.map((m) => `<div class="zeile" style="padding:.6rem 1rem">
+      <div class="mitte"><div class="klein">${m.variante ? `<b style="margin-right:.5rem">${esc(m.variante)}</b>` : ""}${esc(m.bezeichnung)}</div>${m.notiz ? `<div class="gd kurz" style="font-size:.75rem">${esc(m.notiz)}</div>` : ""}</div>
+      <div class="zahl" style="font-weight:500;user-select:all">${fmt(m.wert)} <span class="gd" style="font-weight:400">${esc(m.einheit)}</span></div>
+      ${inBibliothek ? `<button class="x" style="border:1px solid ${m.geprueft ? "#16a34a" : "var(--li)"};color:${m.geprueft ? "#16a34a" : "var(--gd)"}" title="${m.geprueft ? "Nachgemessen / erprobt" : "Nur laut Datenblatt – antippen, wenn geprüft"}" data-klick="mass-geprueft" data-art="${art}" data-besitzer="${besitzer.id}" data-id="${m.id}">${m.geprueft ? "✓" : "?"}</button>` : ""}
+      <button class="x" aria-label="Maß löschen" data-klick="mass-loeschen" data-art="${art}" data-besitzer="${besitzer.id}" data-id="${m.id}">✕</button>
+    </div>`).join("");
+  return `<div class="karte zeilen">
+    ${zeilen || `<p class="pad klein gd">Noch keine Maße eingetragen.</p>`}
+    <form class="pad" data-form="mass" data-art="${art}" data-besitzer="${besitzer.id}">
+      <div class="g6">
+        ${inBibliothek ? `<input class="s6" name="variante" placeholder="Variante (z. B. M20)" aria-label="Variante">` : ""}
+        <input class="s6" name="bezeichnung" required placeholder="Bezeichnung" aria-label="Bezeichnung">
+        <input class="s4" name="wert" required inputmode="decimal" placeholder="Wert" aria-label="Wert">
+        <select class="s2" name="einheit" aria-label="Einheit">${optionen(EINHEITEN)}</select>
+        <input class="s6" name="notiz" placeholder="Notiz (optional)" aria-label="Notiz">
+      </div>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:1rem;margin-top:.75rem">
+        <button class="knopf2">Maß hinzufügen</button>
+        ${inBibliothek ? `<label style="display:flex;align-items:center;gap:.5rem;font-weight:400"><input type="checkbox" name="geprueft" style="width:1rem;height:1rem">nachgemessen / erprobt</label>` : ""}
+      </div>
+    </form></div>`;
+}
+
+function bildBereich(besitzer, art) {
+  return `<div class="karte pad">
+    ${besitzer.bilder.length ? `<div class="galerie" style="margin-bottom:1rem">${besitzer.bilder.map((id) => `<div data-klick="bild-gross" data-id="${id}"><img data-bild="${id}" alt=""><button class="x" aria-label="Bild löschen" data-klick="bild-loeschen" data-art="${art}" data-besitzer="${besitzer.id}" data-id="${id}">✕</button></div>`).join("")}</div>` : `<p class="klein gd" style="margin-bottom:1rem">Noch keine Bilder.</p>`}
+    <label class="knopf2" style="display:inline-flex">Foto / Bild hinzufügen<input type="file" accept="image/*" multiple hidden data-bilder="${art}" data-besitzer="${besitzer.id}"></label>
+  </div>`;
+}
+
+// ---------- Seiten ----------
+function seiteUebersicht() {
+  const offen = sortiert(Z.auftraege.filter((a) => !ERLEDIGT.includes(a.status)));
+  const kacheln = [["#/auftraege", offen.length, "Offene Aufträge"], ["#/stuecke", Z.stuecke.filter((s) => s.status !== "ARCHIVIERT").length, "Stücke"], ["#/bibliothek", Z.eintraege.length, "Einträge in der Maßbibliothek"]];
+  return `<div class="karte pad hinweis"><b>Vorschau-Version.</b> Alles, was du hier einträgst, bleibt nur in diesem Browser auf diesem Gerät. Es gibt keinen Abgleich mit anderen Geräten und keine Sicherung.</div>
+    ${kopf("3D-Druck Bühnen", "", `<a class="knopf" href="#/auftraege/neu">Neuer Auftrag</a>`)}
+    <div class="kacheln">${kacheln.map(([h, n, t]) => `<a class="karte pad" href="${h}"><b class="zahl">${n}</b><span class="gd" style="font-size:.75rem">${t}</span></a>`).join("")}</div>
+    ${abschnitt("Als Nächstes", offen.length ? auftragsListe(offen.slice(0, 6)) : leer("Keine offenen Aufträge", "Lege ein Stück an und erfasse den ersten Auftrag dazu."), offen.length > 6 ? `<a class="klein gd" href="#/auftraege" style="text-decoration:underline">Alle ${offen.length} anzeigen</a>` : "")}
+    ${abschnitt("Drucker", druckerListe())}`;
+}
+
+function druckerListe() {
+  return `<div class="karte zeilen">${Z.drucker.map((d) => {
+    const laeuft = Z.auftraege.filter((a) => a.status === "IM_DRUCK" && a.druckerId === d.id);
+    return `<div class="zeile" style="padding:1rem"><div class="mitte"><div style="font-weight:500">${esc(d.name)}</div><div class="klein gd">${esc(d.bauraum)}</div>
+      ${laeuft.map((a) => `<a class="klein kurz" style="display:block;color:var(--ak);margin-top:.25rem" href="#/auftraege/${a.id}">druckt ${esc(a.nummer)} · ${esc(a.titel)}</a>`).join("")}</div>
+      ${laeuft.length ? chip("Druckt", "#2563eb") : chip("Frei", "#16a34a")}</div>`;
+  }).join("")}</div>`;
+}
+
+function seiteStuecke() {
+  const liste = [...Z.stuecke].sort((a, b) => a.titel.localeCompare(b.titel, "de"));
+  return kopf("Stücke", "Produktionen, zu denen Aufträge gehören.", `<a class="knopf" href="#/stuecke/neu">Neues Stück</a>`) +
+    (liste.length ? `<div class="karte zeilen">${liste.map((s) => {
+      const auftraege = Z.auftraege.filter((a) => a.stueckId === s.id);
+      const offen = auftraege.filter((a) => !ERLEDIGT.includes(a.status)).length;
+      return `<a class="zeile" href="#/stuecke/${s.id}"><div class="mitte"><div style="font-weight:500">${esc(s.titel)}</div><div class="klein gd kurz">${esc([s.sparte, s.spielzeit, s.premiere ? "Premiere " + datum(s.premiere) : null].filter(Boolean).join(" · ") || "–")}</div></div>
+        ${s.status !== "AKTIV" ? chip(STUECK_STATUS[s.status]) : ""}${chip(`${offen} offen · ${auftraege.length} gesamt`)}</a>`;
+    }).join("")}</div>` : leer("Noch keine Stücke", "Lege das erste Stück an, z. B. Otello – danach kannst du Aufträge dazu erfassen."));
+}
+
+function seiteStueckFormular(s) {
+  return kopf(s ? "Stück bearbeiten" : "Neues Stück", s?.titel) + `<form class="raster zwei" data-form="stueck" data-id="${s?.id ?? ""}">
+    ${feld("Titel", eingabe("titel", s?.titel, 'required placeholder="z. B. Otello"'), "", "voll")}
+    ${feld("Sparte", `<select name="sparte">${optionen(SPARTEN, s?.sparte, "–")}</select>`)}
+    ${feld("Status", `<select name="status">${optionen(Object.entries(STUECK_STATUS), s?.status ?? "AKTIV")}</select>`)}
+    ${feld("Spielzeit", eingabe("spielzeit", s?.spielzeit, 'placeholder="2026/27"'))}
+    ${feld("Premiere", eingabe("premiere", s?.premiere, 'type="date"'))}
+    ${feld("Spielstätte", eingabe("spielstaette", s?.spielstaette, 'placeholder="Opernhaus"'))}
+    ${feld("Ansprechpersonen", eingabe("ansprechpersonen", s?.ansprechpersonen))}
+    ${feld("Notizen", `<textarea name="notizen" rows="4">${esc(s?.notizen)}</textarea>`, "", "voll")}
+    <div class="voll"><button class="knopf">Speichern</button></div></form>`;
+}
+
+function seiteStueck(s) {
+  const auftraege = sortiert(Z.auftraege.filter((a) => a.stueckId === s.id)).sort((a, b) => ERLEDIGT.includes(a.status) - ERLEDIGT.includes(b.status));
+  const filament = auftraege.reduce((n, a) => n + (a.filamentIstG ?? a.filamentG ?? 0), 0);
+  const stunden = auftraege.reduce((n, a) => n + (a.druckzeitIstH ?? a.druckzeitH ?? 0), 0);
+  const daten = [["Sparte", s.sparte], ["Spielzeit", s.spielzeit], ["Premiere", s.premiere && datum(s.premiere)], ["Spielstätte", s.spielstaette], ["Ansprechpersonen", s.ansprechpersonen], ["Status", STUECK_STATUS[s.status]], ["Filament gesamt", fmt(filament) + " g"], ["Druckzeit gesamt", fmt(stunden) + " h"]];
+  return kopf(s.titel, "", `<a class="knopf3" href="#/stuecke/${s.id}/bearbeiten">Bearbeiten</a>`) +
+    `<div class="karte pad"><div class="daten">${daten.filter(([, w]) => w).map(([n, w]) => `<div><div class="gd">${n}</div><div class="zahl">${esc(w)}</div></div>`).join("")}</div>${s.notizen ? `<p class="klein pre" style="border-top:1px solid var(--li);margin-top:.75rem;padding-top:.75rem">${esc(s.notizen)}</p>` : ""}</div>` +
+    abschnitt(`Aufträge (${auftraege.length})`, auftraege.length ? auftragsListe(auftraege, true) : leer("Noch keine Aufträge", "Lege den ersten Auftrag für dieses Stück an."), `<a class="knopf" href="#/auftraege/neu?stueck=${s.id}">Neuer Auftrag</a>`);
+}
+
+const filter = { q: "", status: "offen" };
+function auftraegeGefiltert() {
+  const q = filter.q.toLowerCase();
+  return sortiert(Z.auftraege.filter((a) =>
+    (filter.status === "alle" || (filter.status === "offen" ? !ERLEDIGT.includes(a.status) : a.status === filter.status)) &&
+    (!q || [a.titel, a.nummer, a.beschreibung, a.ansprechperson, a.farbe, a.abteilung, stueckVon(a)?.titel].some((t) => String(t ?? "").toLowerCase().includes(q)))));
+}
+const auftraegeInhalt = () => { const l = auftraegeGefiltert(); return l.length ? auftragsListe(l) : leer(Z.auftraege.length ? "Nichts gefunden" : "Noch keine Aufträge", Z.auftraege.length ? "Mit diesen Filtern gibt es keine Aufträge." : "Lege den ersten Auftrag an."); };
+function seiteAuftraege() {
+  return kopf("Aufträge", "", `<a class="knopf" href="#/auftraege/neu">Neuer Auftrag</a>`) +
+    `<div class="g3" style="margin-bottom:1rem"><input class="s2" type="search" id="suche" placeholder="Suchen …" aria-label="Suchen" value="${esc(filter.q)}">
+      <select id="statusfilter" aria-label="Status">${optionen([["offen", "Offene"], ["alle", "Alle"], ...Object.entries(STATUS)], filter.status)}</select></div>
+    <div id="liste">${auftraegeInhalt()}</div>`;
+}
+
+function seiteAuftragFormular(a, stueckVorauswahl) {
+  const status = a?.status ?? "ANGEFRAGT";
+  return kopf(a ? "Auftrag bearbeiten" : "Neuer Auftrag", a ? `${a.nummer} · ${a.titel}` : "Nur der Titel ist Pflicht – Fotos und Maße kommen im nächsten Schritt.") +
+    `<form class="raster" data-form="auftrag" data-id="${a?.id ?? ""}">
+    <div class="raster zwei">
+      ${feld("Titel", eingabe("titel", a?.titel, 'required placeholder="Was wird gebraucht?"'), "", "voll")}
+      ${feld("Stück", `<select name="stueckId">${optionen(Z.stuecke.filter((s) => s.status !== "ARCHIVIERT" || s.id === a?.stueckId).map((s) => [s.id, s.titel]), a?.stueckId ?? stueckVorauswahl, "Allgemein (ohne Stück)")}</select>`)}
+      ${feld("Abteilung", `<select name="abteilung">${optionen(Z.abteilungen, a?.abteilung, "–")}</select>`)}
+      ${feld("Priorität", `<select name="prioritaet">${optionen(Object.entries(PRIO), a?.prioritaet ?? "MITTEL")}</select>`)}
+      ${feld("Deadline", eingabe("faelligAm", a?.faelligAm, 'type="date"'))}
+      ${feld("Beschreibung", `<textarea name="beschreibung" rows="3">${esc(a?.beschreibung)}</textarea>`, "", "voll")}
+    </div>
+    <details class="karte"${a ? " open" : ""}><summary>Mehr Angaben</summary><div class="raster zwei pad" style="border-top:1px solid var(--li)">
+      ${feld("Status", `<select name="status" id="formstatus">${optionen(Object.entries(STATUS), status)}</select>`)}
+      <div id="formdrucker"${status === "IM_DRUCK" ? "" : " hidden"}>${feld("Drucker", `<select name="druckerId">${optionen(Z.drucker.map((d) => [d.id, d.name]), a?.druckerId, "Drucker wählen …")}</select>`, "Pflicht bei „Im Druck“")}</div>
+      ${feld("Umfang", `<select name="umfang">${optionen(Object.entries(UMFANG), a?.umfang)}</select>`)}
+      ${feld("Ansprechperson", eingabe("ansprechperson", a?.ansprechperson))}
+      ${feld("Erhalten am", eingabe("erhaltenAm", a?.erhaltenAm ?? heute(), 'type="date"'))}
+      ${feld("Anzahl Teile", eingabe("stueckzahl", a?.stueckzahl ?? 1, 'inputmode="numeric"'))}
+      ${feld("Material", `<select name="material">${optionen(MATERIAL, a?.material, "–")}</select>`)}
+      ${feld("Farbe", eingabe("farbe", a?.farbe, 'placeholder="z. B. Schwarz matt"'))}
+      ${feld("Nachbearbeitung", eingabe("nachbearbeitung", a?.nachbearbeitung, 'placeholder="schleifen, lackieren …"'))}
+      ${feld("Filament geschätzt", eingabe("filamentG", a?.filamentG, 'inputmode="decimal"'), "g")}
+      ${feld("Filament tatsächlich", eingabe("filamentIstG", a?.filamentIstG, 'inputmode="decimal"'), "g")}
+      ${feld("Druckzeit geschätzt", eingabe("druckzeitH", a?.druckzeitH, 'inputmode="decimal"'), "Stunden")}
+      ${feld("Druckzeit tatsächlich", eingabe("druckzeitIstH", a?.druckzeitIstH, 'inputmode="decimal"'), "Stunden")}
+      <div class="g3 voll">${feld("Länge", eingabe("l", a?.l, 'inputmode="decimal"'), "mm")}${feld("Breite", eingabe("b", a?.b, 'inputmode="decimal"'), "mm")}${feld("Höhe", eingabe("h", a?.h, 'inputmode="decimal"'), "mm")}</div>
+    </div></details>
+    <p class="klein rot" id="formfehler" hidden></p>
+    <div><button class="knopf">${a ? "Speichern" : "Speichern und weiter zu Fotos & Maßen"}</button></div></form>`;
+}
+
+// Merkt sich eine noch nicht gespeicherte Statuswahl, solange der Drucker fehlt.
+let statusWahl = null;
+function seiteAuftrag(a) {
+  const s = stueckVon(a);
+  const gewaehlt = statusWahl ?? a.status;
+  const daten = [["Abteilung", a.abteilung], ["Ansprechperson", a.ansprechperson], ["Umfang", UMFANG[a.umfang]], ["Erhalten am", datum(a.erhaltenAm)], ["Deadline", a.faelligAm && datum(a.faelligAm)], ["Anzahl Teile", a.stueckzahl], ["Material", a.material], ["Farbe", a.farbe],
+    ["Filament geschätzt", a.filamentG != null && fmt(a.filamentG) + " g"], ["Filament tatsächlich", a.filamentIstG != null && fmt(a.filamentIstG) + " g"], ["Druckzeit geschätzt", a.druckzeitH != null && fmt(a.druckzeitH) + " h"], ["Druckzeit tatsächlich", a.druckzeitIstH != null && fmt(a.druckzeitIstH) + " h"],
+    ["Hauptmaße L × B × H", (a.l != null || a.b != null || a.h != null) && `${fmt(a.l)} × ${fmt(a.b)} × ${fmt(a.h)} mm`], ["Nachbearbeitung", a.nachbearbeitung]];
+  return `<header style="margin-bottom:1.5rem">
+      <div class="klein gd"><span class="zahl">${esc(a.nummer)}</span> · ${s ? `<a href="#/stuecke/${s.id}" style="text-decoration:underline">${esc(s.titel)}</a>` : "Allgemein"}</div>
+      <h1 style="margin-top:.25rem">${esc(a.titel)}</h1>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-top:.75rem">
+        <select id="status" aria-label="Status" style="width:auto" data-id="${a.id}">${optionen(Object.entries(STATUS), gewaehlt)}</select>
+        ${gewaehlt === "IM_DRUCK" ? `<select id="statusdrucker" aria-label="Drucker" style="width:auto" data-id="${a.id}">${optionen(Z.drucker.map((d) => [d.id, d.name]), a.druckerId, "Drucker wählen …")}</select>
+          <button class="knopf" id="statusok" data-klick="status-uebernehmen" data-id="${a.id}"${a.status === "IM_DRUCK" ? " hidden" : ""}>Übernehmen</button>` : ""}
+        ${chip("Priorität " + PRIO[a.prioritaet], PRIO_FARBE[a.prioritaet])}
+      </div>
+      <p class="klein rot" id="statusfehler" hidden style="margin-top:.5rem">Bitte den Drucker auswählen, auf dem gedruckt wird.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem">
+        <a class="knopf3" href="#/auftraege/${a.id}/bearbeiten">Bearbeiten</a>
+        <button class="knopf3" data-klick="auftrag-duplizieren" data-id="${a.id}">Duplizieren</button>
+        <button class="knopf3 rot" data-klick="auftrag-loeschen" data-id="${a.id}">Löschen</button>
+      </div></header>
+    <div class="spalten"><div>
+      ${abschnitt("Bilder", bildBereich(a, "auftrag"))}
+      ${a.beschreibung ? abschnitt("Beschreibung", `<div class="karte pad klein pre">${esc(a.beschreibung)}</div>`) : ""}
+    </div><div>
+      ${abschnitt("Maße", massBereich(a, "auftrag"))}
+      ${abschnitt("Daten", `<div class="karte pad"><div class="daten">${daten.filter(([, w]) => w != null && w !== false && w !== "").map(([n, w]) => `<div><div class="gd">${n}</div><div class="zahl">${esc(w)}</div></div>`).join("")}</div></div>`)}
+    </div></div>
+    ${abschnitt("Notizen und Verlauf", `<div class="karte zeilen"><form class="pad" data-form="notiz" data-id="${a.id}"><textarea name="text" rows="2" required placeholder="Notiz hinzufügen …" aria-label="Notiz"></textarea><button class="knopf2" style="margin-top:.75rem">Notiz speichern</button></form>
+      ${a.notizen.map((n) => `<div class="zeile" style="align-items:flex-start"><div class="mitte"><div class="gd" style="font-size:.75rem">${datumZeit(n.zeit)}${n.art === "STATUS" ? " · Status geändert" : ""}</div><div class="klein pre${n.art === "STATUS" ? " gd" : ""}">${esc(n.text)}</div></div>
+        ${n.art === "STATUS" ? "" : `<button class="x" aria-label="Notiz löschen" data-klick="notiz-loeschen" data-besitzer="${a.id}" data-id="${n.id}">✕</button>`}</div>`).join("")}</div>`)}`;
+}
+
+const bibFilter = { q: "", kategorie: "" };
+function eintraegeGefiltert() {
+  const q = bibFilter.q.toLowerCase();
+  return Z.eintraege.filter((e) => (!bibFilter.kategorie || e.kategorie === bibFilter.kategorie) &&
+    (!q || [e.titel, e.schlagworte, e.beschreibung, ...e.masse.flatMap((m) => [m.bezeichnung, m.variante])].some((t) => String(t ?? "").toLowerCase().includes(q))))
+    .sort((a, b) => a.titel.localeCompare(b.titel, "de"));
+}
+function bibInhalt() {
+  const l = eintraegeGefiltert();
+  return l.length ? `<div class="karte zeilen">${l.map((e) => `<a class="zeile" href="#/bibliothek/${e.id}"><div class="mini" style="width:3rem;height:3rem">${e.bilder[0] ? `<img data-bild="${e.bilder[0]}" alt="">` : ""}</div>
+      <div class="mitte"><div class="kurz" style="font-weight:500">${esc(e.titel)}</div><div class="klein gd kurz">${esc([e.kategorie, `${e.masse.length} ${e.masse.length === 1 ? "Maß" : "Maße"}`].filter(Boolean).join(" · "))}</div></div><span class="gd">›</span></a>`).join("")}</div>`
+    : leer(Z.eintraege.length ? "Nichts gefunden" : "Noch keine Einträge", Z.eintraege.length ? "Dazu ist noch nichts hinterlegt." : "Lege den ersten Eintrag an, z. B. eine Kabelverschraubung mit ihren Maßen.");
+}
+function seiteBibliothek() {
+  return kopf("Maßbibliothek", "Standardmaße für den Alltag.", `<a class="knopf" href="#/bibliothek/neu">Neuer Eintrag</a>`) +
+    `<input type="search" id="bibsuche" placeholder="Suchen, z. B. M20 oder DMX …" aria-label="Suchen" value="${esc(bibFilter.q)}" style="margin-bottom:.75rem">
+    <div class="chips" style="margin-bottom:1rem">${["", ...Z.kategorien].map((k) => `<a class="chip gross${bibFilter.kategorie === k ? " an" : ""}" href="#/bibliothek" data-klick="bib-kategorie" data-wert="${esc(k)}">${esc(k || "Alle")}</a>`).join("")}</div>
+    <div id="bibliste">${bibInhalt()}</div>`;
+}
+function seiteEintragFormular(e) {
+  return kopf(e ? "Eintrag bearbeiten" : "Neuer Eintrag", e ? e.titel : "Maße und Bilder kommen im nächsten Schritt.") + `<form class="raster zwei" data-form="eintrag" data-id="${e?.id ?? ""}">
+    ${feld("Titel", eingabe("titel", e?.titel, 'required placeholder="z. B. Kabelverschraubung metrisch"'), "", "voll")}
+    ${feld("Kategorie", `<select name="kategorie">${optionen(Z.kategorien, e?.kategorie, "–")}</select>`)}
+    ${feld("Quelle", eingabe("quelle", e?.quelle), "Datenblatt, Norm, selbst gemessen")}
+    ${feld("Beschreibung", `<textarea name="beschreibung" rows="3">${esc(e?.beschreibung)}</textarea>`, "", "voll")}
+    ${feld("Druckhinweis", `<textarea name="druckhinweis" rows="2" placeholder="z. B. Bohrung +0,3 mm bei PETG">${esc(e?.druckhinweis)}</textarea>`, "erprobte Zugaben und Toleranzen", "voll")}
+    ${feld("Schlagworte", eingabe("schlagworte", e?.schlagworte, 'placeholder="DMX, XLR, Einbau"'), "für die Suche", "voll")}
+    <div class="voll"><button class="knopf">${e ? "Speichern" : "Speichern und weiter zu den Maßen"}</button></div></form>`;
+}
+function seiteEintrag(e) {
+  const offen = Z.auftraege.filter((a) => !ERLEDIGT.includes(a.status)).sort((a, b) => b.id - a.id);
+  const varianten = [...new Set(e.masse.map((m) => m.variante).filter(Boolean))];
+  return kopf(e.titel, [e.kategorie, e.quelle && "Quelle: " + e.quelle].filter(Boolean).join(" · "), `<a class="knopf3" href="#/bibliothek/${e.id}/bearbeiten">Bearbeiten</a>`) +
+    (e.druckhinweis ? `<div class="karte pad hinweis"><b style="color:var(--ak)">Druckhinweis</b><p class="pre" style="margin-top:.25rem">${esc(e.druckhinweis)}</p></div>` : "") +
+    (e.beschreibung ? `<p class="klein pre">${esc(e.beschreibung)}</p>` : "") +
+    `<div class="spalten"><div>${abschnitt("Maße", massBereich(e, "eintrag"))}
+      ${e.masse.length ? abschnitt("In Auftrag übernehmen", `<div class="karte pad">${offen.length ? `<form class="g2" data-form="uebernehmen" data-id="${e.id}"><select name="auftragId" aria-label="Auftrag">${optionen(offen.map((a) => [a.id, `${a.nummer} · ${a.titel}`]))}</select>
+        ${varianten.length ? `<select name="variante" aria-label="Variante">${optionen(varianten, "", "Alle Varianten")}</select>` : ""}<button class="knopf2">Maße kopieren</button></form>` : `<p class="klein gd">Es gibt gerade keinen offenen Auftrag.</p>`}</div>`) : ""}
+    </div><div>${abschnitt("Bilder und Zeichnungen", bildBereich(e, "eintrag"))}</div></div>
+    <p style="margin-top:2.5rem"><button class="knopf3 rot" data-klick="eintrag-loeschen" data-id="${e.id}">Eintrag löschen</button></p>`;
+}
+
+function seiteMehr() {
+  const liste = (name, werte) => `<div class="karte pad"><div class="chips" style="margin-bottom:1rem">${werte.map((w) => `<span class="chip" style="padding-right:.2rem">${esc(w)}<button class="x" style="width:1.5rem;height:1.5rem" aria-label="${esc(w)} entfernen" data-klick="liste-entfernen" data-liste="${name}" data-wert="${esc(w)}">✕</button></span>`).join("")}</div>
+    <form data-form="liste" data-liste="${name}" style="display:flex;gap:.5rem"><input name="name" required placeholder="Neu …" aria-label="Neuer Eintrag"><button class="knopf2">Hinzufügen</button></form></div>`;
+  return kopf("Mehr") + abschnitt("Drucker", druckerListe()) + abschnitt("Abteilungen", liste("abteilungen", Z.abteilungen)) + abschnitt("Kategorien der Maßbibliothek", liste("kategorien", Z.kategorien)) +
+    abschnitt("Daten auf diesem Gerät", `<div class="karte pad"><p class="klein gd" style="margin-bottom:1rem">Diese Vorschau speichert alles nur in diesem Browser. Wer den Browserverlauf oder die Websitedaten löscht, löscht auch diese Einträge.</p><button class="knopf3 rot" data-klick="alles-loeschen">Alle Daten auf diesem Gerät löschen</button></div>`);
+}
+
+// ---------- Navigation und Anzeige ----------
+const NAV = [["#/", "Übersicht", "M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"], ["#/stuecke", "Stücke", "M4 5h16v11H4zM8 20h8M12 16v4"], ["#/auftraege", "Aufträge", "M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"], ["#/bibliothek", "Maße", "M3 9h18v6H3zM7 9v3M11 9v3M15 9v3M19 9v3"], ["#/mehr", "Mehr", "M5 12h.01M12 12h.01M19 12h.01"]];
+
+function anzeigen() {
+  const [pfad, abfrage] = (location.hash.slice(1) || "/").split("?");
+  const teile = pfad.split("/").filter(Boolean);
+  const [bereich, zweites, drittes] = teile;
+  const id = Number(zweites);
+  let html;
+  if (!bereich) html = seiteUebersicht();
+  else if (bereich === "stuecke") {
+    const s = Z.stuecke.find((x) => x.id === id);
+    html = zweites === "neu" ? seiteStueckFormular() : s ? (drittes === "bearbeiten" ? seiteStueckFormular(s) : seiteStueck(s)) : seiteStuecke();
+  } else if (bereich === "auftraege") {
+    const a = Z.auftraege.find((x) => x.id === id);
+    html = zweites === "neu" ? seiteAuftragFormular(null, new URLSearchParams(abfrage).get("stueck")) : a ? (drittes === "bearbeiten" ? seiteAuftragFormular(a) : seiteAuftrag(a)) : seiteAuftraege();
+  } else if (bereich === "bibliothek") {
+    const e = Z.eintraege.find((x) => x.id === id);
+    html = zweites === "neu" ? seiteEintragFormular() : e ? (drittes === "bearbeiten" ? seiteEintragFormular(e) : seiteEintrag(e)) : seiteBibliothek();
+  } else html = seiteMehr();
+
+  document.getElementById("app").innerHTML = html;
+  const aktiv = "#/" + (bereich || "");
+  const punkte = NAV.map(([h, n, d]) => `<a href="${h}" class="${h === aktiv ? "aktiv" : ""}"><svg viewBox="0 0 24 24"><path d="${d}"/></svg>${n}</a>`).join("");
+  document.getElementById("nav-unten").innerHTML = punkte;
+  document.getElementById("nav-seite").innerHTML = "<b>3D-Druck Bühnen</b>" + punkte;
+  bilderEinsetzen();
+}
+const gehe = (hash) => { if (location.hash === hash) anzeigen(); else location.hash = hash; };
+window.addEventListener("hashchange", () => { statusWahl = null; window.scrollTo(0, 0); anzeigen(); });
+
+// ---------- Aktionen ----------
+const besitzerVon = (art, id) => (art === "auftrag" ? Z.auftraege : Z.eintraege).find((x) => x.id === Number(id));
+
+function statusSetzen(a, status, druckerId) {
+  if (status === "IM_DRUCK" && !druckerId) return false;
+  const vorher = a.status;
+  a.druckerId = status === "IM_DRUCK" ? druckerId : null;
+  if (vorher !== status) {
+    a.status = status;
+    a.notizen.unshift({ id: neueId(), art: "STATUS", zeit: new Date().toISOString(), text: `${STATUS[vorher]} → ${STATUS[status]}${status === "IM_DRUCK" ? ` (${druckerVon(a).name})` : ""}` });
+  }
+  return true;
+}
+
+const FORMULARE = {
+  stueck(d, form) {
+    const daten = { titel: d.titel.trim(), sparte: d.sparte, status: d.status, spielzeit: d.spielzeit.trim(), premiere: d.premiere, spielstaette: d.spielstaette.trim(), ansprechpersonen: d.ansprechpersonen.trim(), notizen: d.notizen.trim() };
+    let s = Z.stuecke.find((x) => x.id === Number(form.dataset.id));
+    if (s) Object.assign(s, daten); else Z.stuecke.push((s = { id: neueId(), ...daten }));
+    return "#/stuecke/" + s.id;
+  },
+  auftrag(d, form) {
+    const bestehend = Z.auftraege.find((x) => x.id === Number(form.dataset.id));
+    if (d.status === "IM_DRUCK" && !d.druckerId) {
+      const fehler = document.getElementById("formfehler");
+      fehler.textContent = "Bitte den Drucker auswählen, auf dem gedruckt wird.";
+      fehler.hidden = false;
+      form.querySelector("details").open = true;
+      return null;
+    }
+    const daten = { titel: d.titel.trim(), beschreibung: d.beschreibung.trim(), stueckId: Number(d.stueckId) || null, abteilung: d.abteilung, prioritaet: d.prioritaet, faelligAm: d.faelligAm, umfang: d.umfang, ansprechperson: d.ansprechperson.trim(), erhaltenAm: d.erhaltenAm || heute(), stueckzahl: zahl(d.stueckzahl) ?? 1, material: d.material, farbe: d.farbe.trim(), nachbearbeitung: d.nachbearbeitung.trim(),
+      filamentG: zahl(d.filamentG), filamentIstG: zahl(d.filamentIstG), druckzeitH: zahl(d.druckzeitH), druckzeitIstH: zahl(d.druckzeitIstH), l: zahl(d.l), b: zahl(d.b), h: zahl(d.h) };
+    let a = bestehend;
+    if (a) Object.assign(a, daten);
+    else Z.auftraege.push((a = { id: neueId(), nummer: "WB-" + Z.naechsteNummer++, status: "ANGEFRAGT", druckerId: null, masse: [], notizen: [], bilder: [], ...daten }));
+    statusSetzen(a, d.status, d.druckerId);
+    return "#/auftraege/" + a.id;
+  },
+  eintrag(d, form) {
+    const daten = { titel: d.titel.trim(), kategorie: d.kategorie, quelle: d.quelle.trim(), beschreibung: d.beschreibung.trim(), druckhinweis: d.druckhinweis.trim(), schlagworte: d.schlagworte.trim() };
+    let e = Z.eintraege.find((x) => x.id === Number(form.dataset.id));
+    if (e) Object.assign(e, daten); else Z.eintraege.push((e = { id: neueId(), masse: [], bilder: [], ...daten }));
+    return "#/bibliothek/" + e.id;
+  },
+  mass(d, form) {
+    const wert = zahl(d.wert);
+    if (wert == null) { form.wert.focus(); return null; }
+    besitzerVon(form.dataset.art, form.dataset.besitzer).masse.push({ id: neueId(), variante: (d.variante || "").trim(), bezeichnung: d.bezeichnung.trim(), wert, einheit: d.einheit, notiz: d.notiz.trim(), geprueft: d.geprueft === "on" });
+  },
+  notiz(d, form) {
+    Z.auftraege.find((x) => x.id === Number(form.dataset.id)).notizen.unshift({ id: neueId(), art: "NOTIZ", zeit: new Date().toISOString(), text: d.text.trim() });
+  },
+  uebernehmen(d, form) {
+    // Bewusst eine Kopie: spätere Änderungen in der Bibliothek verändern den Auftrag nicht.
+    const e = Z.eintraege.find((x) => x.id === Number(form.dataset.id));
+    const a = Z.auftraege.find((x) => x.id === Number(d.auftragId));
+    for (const m of e.masse.filter((x) => !d.variante || x.variante === d.variante)) {
+      a.masse.push({ id: neueId(), bezeichnung: [m.variante, m.bezeichnung].filter(Boolean).join(" · "), wert: m.wert, einheit: m.einheit, notiz: m.notiz || "aus Bibliothek: " + e.titel });
+    }
+    return "#/auftraege/" + a.id;
+  },
+  liste(d, form) {
+    const liste = Z[form.dataset.liste];
+    const name = d.name.trim();
+    if (name && !liste.includes(name)) liste.push(name);
+  },
+};
+
+document.addEventListener("submit", async (ereignis) => {
+  const form = ereignis.target.closest("form[data-form]");
+  if (!form) return;
+  ereignis.preventDefault();
+  const ziel = FORMULARE[form.dataset.form](Object.fromEntries(new FormData(form)), form);
+  if (ziel === null) return;
+  await sichern();
+  if (ziel) gehe(ziel); else anzeigen();
+});
+
+const KLICKS = {
+  "mass-loeschen"(d) { const b = besitzerVon(d.art, d.besitzer); b.masse = b.masse.filter((m) => m.id !== Number(d.id)); },
+  "mass-geprueft"(d) { const m = besitzerVon(d.art, d.besitzer).masse.find((x) => x.id === Number(d.id)); m.geprueft = !m.geprueft; },
+  "notiz-loeschen"(d) { const a = Z.auftraege.find((x) => x.id === Number(d.besitzer)); a.notizen = a.notizen.filter((n) => n.id !== Number(d.id)); },
+  async "bild-loeschen"(d) { if (!confirm("Dieses Bild löschen?")) return false; const b = besitzerVon(d.art, d.besitzer); b.bilder = b.bilder.filter((i) => i !== Number(d.id)); await bildLoeschen(Number(d.id)); },
+  "bild-gross"(d) { const url = bildUrls.get(Number(d.id)); if (url) document.body.insertAdjacentHTML("beforeend", `<div class="gross" data-klick="gross-zu"><img src="${url}" alt=""></div>`); return false; },
+  "gross-zu"() { document.querySelector(".gross")?.remove(); return false; },
+  "status-uebernehmen"(d) {
+    const a = Z.auftraege.find((x) => x.id === Number(d.id));
+    if (!statusSetzen(a, "IM_DRUCK", document.getElementById("statusdrucker").value)) { document.getElementById("statusfehler").hidden = false; return false; }
+    statusWahl = null;
+  },
+  "auftrag-duplizieren"(d) {
+    const v = Z.auftraege.find((x) => x.id === Number(d.id));
+    const kopie = { ...v, id: neueId(), nummer: "WB-" + Z.naechsteNummer++, titel: v.titel + " (Kopie)", status: "ANGEFRAGT", druckerId: null, filamentIstG: null, druckzeitIstH: null, erhaltenAm: heute(), bilder: [], notizen: [], masse: v.masse.map((m) => ({ ...m, id: neueId() })) };
+    Z.auftraege.push(kopie);
+    return "#/auftraege/" + kopie.id;
+  },
+  async "auftrag-loeschen"(d) {
+    const a = Z.auftraege.find((x) => x.id === Number(d.id));
+    if (!confirm(`Auftrag ${a.nummer} mit allen Bildern, Maßen und Notizen endgültig löschen?`)) return false;
+    for (const id of a.bilder) await bildLoeschen(id);
+    Z.auftraege = Z.auftraege.filter((x) => x !== a);
+    return "#/auftraege";
+  },
+  async "eintrag-loeschen"(d) {
+    const e = Z.eintraege.find((x) => x.id === Number(d.id));
+    if (!confirm(`„${e.titel}“ mit allen Maßen und Bildern endgültig löschen?`)) return false;
+    for (const id of e.bilder) await bildLoeschen(id);
+    Z.eintraege = Z.eintraege.filter((x) => x !== e);
+    return "#/bibliothek";
+  },
+  "bib-kategorie"(d) { bibFilter.kategorie = d.wert; },
+  "liste-entfernen"(d) { Z[d.liste] = Z[d.liste].filter((w) => w !== d.wert); },
+  async "alles-loeschen"() {
+    if (!confirm("Wirklich alle Stücke, Aufträge, Maße und Bilder auf diesem Gerät löschen?")) return false;
+    await kv("readwrite", (s) => s.clear());
+    bildUrls.clear();
+    Z = START();
+    return "#/";
+  },
+};
+
+document.addEventListener("click", async (ereignis) => {
+  const knopf = ereignis.target.closest("[data-klick]");
+  if (!knopf) return;
+  ereignis.preventDefault();
+  ereignis.stopPropagation();
+  const ziel = await KLICKS[knopf.dataset.klick](knopf.dataset);
+  if (ziel === false) return;
+  await sichern();
+  if (ziel) gehe(ziel); else anzeigen();
+});
+
+document.addEventListener("change", async (ereignis) => {
+  const el = ereignis.target;
+  if (el.id === "status") {
+    const a = Z.auftraege.find((x) => x.id === Number(el.dataset.id));
+    if (el.value === "IM_DRUCK") { statusWahl = "IM_DRUCK"; anzeigen(); return; } // erst Drucker wählen
+    statusWahl = null;
+    statusSetzen(a, el.value, null);
+    await sichern();
+    anzeigen();
+  } else if (el.id === "statusdrucker") {
+    const a = Z.auftraege.find((x) => x.id === Number(el.dataset.id));
+    // Läuft der Druck schon, gilt ein Druckerwechsel sofort; sonst bestätigt „Übernehmen“.
+    if (a.status === "IM_DRUCK" && el.value) { a.druckerId = el.value; await sichern(); anzeigen(); }
+  } else if (el.id === "formstatus") {
+    document.getElementById("formdrucker").hidden = el.value !== "IM_DRUCK";
+  } else if (el.id === "statusfilter") {
+    filter.status = el.value;
+    document.getElementById("liste").innerHTML = auftraegeInhalt();
+    bilderEinsetzen();
+  } else if (el.dataset.bilder) {
+    const b = besitzerVon(el.dataset.bilder, el.dataset.besitzer);
+    el.closest("label").firstChild.textContent = "Wird gespeichert …";
+    for (const datei of el.files) {
+      try { b.bilder.push(await bildSpeichern(datei)); } catch { alert(`„${datei.name}“ konnte nicht gelesen werden.`); }
+    }
+    await sichern();
+    anzeigen();
+  }
+});
+
+document.addEventListener("input", (ereignis) => {
+  // Nur die Liste neu aufbauen, damit das Suchfeld den Fokus behält.
+  if (ereignis.target.id === "suche") { filter.q = ereignis.target.value; document.getElementById("liste").innerHTML = auftraegeInhalt(); bilderEinsetzen(); }
+  if (ereignis.target.id === "bibsuche") { bibFilter.q = ereignis.target.value; document.getElementById("bibliste").innerHTML = bibInhalt(); bilderEinsetzen(); }
+});
+
+// ---------- Start ----------
+lesen("zustand").catch(() => null).then((gespeichert) => {
+  if (gespeichert) Z = { ...START(), ...gespeichert };
+  anzeigen();
+});
+</script>
+</body>
+</html>

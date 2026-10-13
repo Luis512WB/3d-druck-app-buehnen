@@ -7,6 +7,13 @@
       "runtimeArgs": ["run", "dev"],
       "port": 3000,
       "autoPort": true
+    },
+    {
+      "name": "vorschau",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/vorschau-server.mjs"],
+      "port": 4173,
+      "autoPort": true
     }
   ]
 }
