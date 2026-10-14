@@ -56,6 +56,9 @@ export const DRUCKER_ZUSTAND = {
 } as const;
 export type DruckerZustand = keyof typeof DRUCKER_ZUSTAND;
 
+export const DARSTELLUNGEN = { dunkel: "Dunkel", hell: "Hell", system: "Wie Gerät" } as const;
+export type Darstellung = keyof typeof DARSTELLUNGEN;
+
 export const DRUCKJOB_STATUS = {
   GEPLANT: "Geplant",
   LAEUFT: "Läuft",

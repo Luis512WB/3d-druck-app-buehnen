@@ -11,10 +11,24 @@ import { dateienLoeschen } from "@/lib/uploads";
 export async function eintragSpeichern(_: FormZustand, formData: FormData): Promise<FormZustand> {
   const benutzer = await erfordereBenutzer("ADMIN", "BEARBEITER");
 
-  const eingabe = BibliothekSchema.safeParse(Object.fromEntries(formData));
+  const roh = Object.fromEntries(formData);
+  const neueKategorie = roh.kategorieId === "neu" ? String(roh.neueKategorie ?? "").trim() : null;
+  if (neueKategorie === "") return { fehler: "Bitte einen Namen für die neue Kategorie eingeben." };
+
+  const eingabe = BibliothekSchema.safeParse({ ...roh, kategorieId: neueKategorie ? "" : roh.kategorieId });
   if (!eingabe.success) return { fehler: ersterFehler(eingabe.error) };
 
   const { id, ...daten } = eingabe.data;
+  if (neueKategorie) {
+    const anzahl = await db.bibliothekskategorie.count();
+    daten.kategorieId = (
+      await db.bibliothekskategorie.upsert({
+        where: { name: neueKategorie },
+        update: {},
+        create: { name: neueKategorie, reihenfolge: anzahl },
+      })
+    ).id;
+  }
   const eintrag = id
     ? await db.bibliothekseintrag.update({ where: { id }, data: daten })
     : await db.bibliothekseintrag.create({ data: { ...daten, erstelltVonId: benutzer.id } });

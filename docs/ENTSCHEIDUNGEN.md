@@ -4,6 +4,9 @@ Kurzes Protokoll der Grundsatzentscheidungen. Neue Einträge oben anfügen.
 
 ## Getroffen
 
+### E-11 · Gestaltung: technisch, dunkel, Petrol (14.10.2026)
+Nach Rückmeldung „sieht zu sehr nach KI-Webdesign aus“ und „Orange/Rot zu heftig“: nüchterner Werkstatt-Stil mit Maschinenschrift, Dunkel als Standard, Petrol als einzige Akzentfarbe, Logo-Zeichen der Bühnen. Details in DESIGN.md.
+
 ### E-10 · Next.js ohne „Cache Components“ (13.10.2026)
 In `next.config.ts` ist `cacheComponents` abgeschaltet. **Grund:** Jede Seite liegt hinter der Anmeldung und zeigt frische Daten aus der Datenbank; das neue Modell verlangt dafür in jeder Seite eigene Lade-Grenzen, ohne dass eine interne App mit wenigen Nutzern davon profitiert. **Zu beachten:** Laut Next.js-Dokumentation entfällt die Option in der nächsten Hauptversion – vor einem Versionssprung muss das neu bewertet werden.
 

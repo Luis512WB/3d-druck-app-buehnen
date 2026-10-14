@@ -50,7 +50,7 @@ export default async function EintragDetail({ params }: { params: Promise<{ id: 
       )}
       {eintrag.beschreibung && <p className="whitespace-pre-wrap text-sm">{eintrag.beschreibung}</p>}
 
-      <div className="grid gap-x-8 lg:grid-cols-2">
+      <div className="grid gap-x-8 lg:grid-cols-2 [&>*]:min-w-0">
         <div>
           <Abschnitt titel="Maße">
             <MassBereich masse={eintrag.masse} bibliothekseintragId={eintrag.id} />
@@ -98,7 +98,7 @@ export default async function EintragDetail({ params }: { params: Promise<{ id: 
         <input type="hidden" name="id" value={eintrag.id} />
         <BestaetigenKnopf
           frage={`„${eintrag.titel}“ mit allen Maßen und Dateien endgültig löschen?`}
-          className={`${KNOPF_KLEIN} text-red-600 dark:text-red-400`}
+          className={`${KNOPF_KLEIN} text-warnung`}
         >
           Eintrag löschen
         </BestaetigenKnopf>

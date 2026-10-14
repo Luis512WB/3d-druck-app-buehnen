@@ -16,29 +16,42 @@ type DruckerMitJob = Prisma.DruckerGetPayload<{ include: typeof DRUCKER_MIT_LAUF
 
 export function DruckerListe({ drucker }: { drucker: DruckerMitJob[] }) {
   return (
-    <Karte className="divide-y divide-linie">
+    <Karte className="divide-y divide-linie-2">
       {drucker.map((d) => {
         const belegt = d.druckjobs.length > 0;
         return (
-          <div key={d.id} className="flex items-center justify-between gap-4 px-4 py-4">
-            <div className="min-w-0">
-              <div className="font-medium">{d.name}</div>
-              <div className="text-sm text-gedaempft tabular-nums">
-                {d.bauraumXMm} × {d.bauraumYMm} × {d.bauraumZMm} mm
-                {d.anzahlMaterialien > 1 && ` · ${d.anzahlMaterialien} Materialien gleichzeitig`}
+          <div key={d.id} className="space-y-2 px-4 py-3.5">
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <div className="font-semibold">{d.name}</div>
+                <div className="truncate font-mono text-xs text-gedaempft">
+                  {d.bauraumXMm} × {d.bauraumYMm} × {d.bauraumZMm} mm
+                  {d.anzahlMaterialien > 1 && ` · ${d.anzahlMaterialien} Materialien`}
+                </div>
               </div>
-              {d.druckjobs.map((j) => (
-                <Link key={j.id} href={`/auftraege/${j.auftrag.id}`} className="mt-1 block truncate text-sm text-akzent">
-                  druckt {j.auftrag.nummer} · {j.auftrag.titel}
-                </Link>
-              ))}
+              {d.zustand !== "BEREIT" ? (
+                <Chip farbe="#c9a227">{DRUCKER_ZUSTAND[d.zustand as DruckerZustand] ?? d.zustand}</Chip>
+              ) : belegt ? (
+                <Chip farbe="var(--akzent)">Druckt</Chip>
+              ) : (
+                <Chip farbe="#5f9e6e">Frei</Chip>
+              )}
             </div>
-            {d.zustand !== "BEREIT" ? (
-              <Chip farbe="#f59e0b">{DRUCKER_ZUSTAND[d.zustand as DruckerZustand] ?? d.zustand}</Chip>
-            ) : belegt ? (
-              <Chip farbe="#2563eb">Druckt</Chip>
+            {belegt ? (
+              d.druckjobs.map((j) => (
+                <Link
+                  key={j.id}
+                  href={`/auftraege/${j.auftrag.id}`}
+                  className="flex items-center gap-2 border-l-2 border-akzent bg-akzent-zart px-3 py-2 text-sm"
+                >
+                  <span className="font-mono font-semibold">{j.auftrag.nummer}</span>
+                  <span className="truncate">{j.auftrag.titel}</span>
+                </Link>
+              ))
             ) : (
-              <Chip farbe="#16a34a">Frei</Chip>
+              <div className="border-l-2 border-linie bg-flaeche-2 px-3 py-2 text-sm text-gedaempft">
+                Bereit für den nächsten Druck
+              </div>
             )}
           </div>
         );

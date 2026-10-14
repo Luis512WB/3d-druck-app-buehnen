@@ -65,17 +65,28 @@ export function farbeZuHex(name: string | null | undefined) {
 }
 
 export const PRIORITAET_FARBE: Record<string, string> = {
-  NIEDRIG: "#9ca3af",
-  MITTEL: "#3b82f6",
-  HOCH: "#f97316",
-  DRINGEND: "#ef4444",
+  NIEDRIG: "#8b8f96",
+  MITTEL: "#8b8f96",
+  HOCH: "#c9a227",
+  DRINGEND: "var(--warnung)",
 };
 
 export const PRIORITAET_RANG: Record<string, number> = { DRINGEND: 0, HOCH: 1, MITTEL: 2, NIEDRIG: 3 };
 
+// Gedämpfte Farben, „Im Druck“ in der Akzentfarbe.
+const STATUS_FARBE: Record<string, string> = {
+  ANGEFRAGT: "#8b8f96",
+  IN_PLANUNG: "#6c8ebf",
+  KONSTRUKTION: "#5b9aa6",
+  DRUCKBEREIT: "#c9a227",
+  IM_DRUCK: "var(--akzent)",
+  NACHBEARBEITUNG: "#b07d62",
+  FERTIG: "#5f9e6e",
+  GELIEFERT: "#4d8a5c",
+  PAUSIERT: "#8b8f96",
+  ABGEBROCHEN: "#b5655f",
+};
+
 export function statusFarbe(status: string) {
-  if (status === "IM_DRUCK") return "#2563eb";
-  if (status === "FERTIG" || status === "GELIEFERT") return "#16a34a";
-  if (status === "PAUSIERT" || status === "ABGEBROCHEN") return "#9ca3af";
-  return "#f59e0b";
+  return STATUS_FARBE[status] ?? "#8b8f96";
 }

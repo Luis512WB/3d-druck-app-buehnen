@@ -12,6 +12,7 @@
 </script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="3D-Druck">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23111315'/%3E%3Csvg x='8' y='15' width='48' height='31' viewBox='17 0 351 228'%3E%3Cpath fill='%23e7e5e0' d='M17.41 0l71.661 228h54.537L192.16 60.886h.705L241.065 228H295.6L367.59 0H17.41z'/%3E%3C/svg%3E%3C/svg%3E">
 <title>Druckaufträge · Wuppertaler Bühnen</title>
 <!--
   Vorschau-Version ohne Server: eine einzelne Seite, die alles im Browser des jeweiligen Geräts
@@ -54,7 +55,8 @@ svg.i.k{width:15px;height:15px}
 /* ---------- Rahmen ---------- */
 .leiste{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:.6rem;padding:.7rem 1rem;padding-top:calc(.7rem + env(safe-area-inset-top));background:var(--hg);border-bottom:1px solid var(--li)}
 .marke{display:flex;align-items:center;gap:.65rem;font-weight:700;font-size:.95rem}
-.logo{display:grid;place-items:center;width:30px;height:30px;border-radius:4px;background:var(--ak);color:var(--akt);font:700 .78rem var(--mono);letter-spacing:-.02em}
+.logo{height:22px;width:auto;flex:none;fill:var(--tx)}
+.marke>span{border-left:1px solid var(--li);padding-left:.65rem}
 .marke small{display:block;font:500 .68rem var(--mono);color:var(--gd);text-transform:uppercase;letter-spacing:.06em;line-height:1.2}
 .marke span{line-height:1.15}
 main{max-width:68rem;margin:0 auto;padding:1.25rem 1rem 7.5rem}
@@ -382,6 +384,9 @@ const abschnitt = (titel, inhalt, aktion) => `<section class="abschnitt"><div cl
 const karte = (titel, symbol, inhalt, aktion) => `<section class="karte abschnitt"><div class="kk"><h2>${sym(symbol, "k")}${esc(titel)}</h2>${aktion || ""}</div>${inhalt}</section>`;
 const leer = (symbol, titel, text, aktion) => `<div class="karte leer"><div class="sym">${sym(symbol)}</div><p style="font-weight:600">${esc(titel)}</p><p class="klein gd" style="margin:.3rem auto 0;max-width:22rem">${esc(text)}</p>${aktion ? `<div style="margin-top:1.1rem">${aktion}</div>` : ""}</div>`;
 const feld = (label, inhalt, hinweis, klasse) => `<label class="${klasse || ""}">${esc(label)}${hinweis ? `<small>${esc(hinweis)}</small>` : ""}${inhalt}</label>`;
+const mitNeu = (name, optionenHtml, neuName, neuText, platzhalter) =>
+  `<select name="${name}" data-neu="${neuName}">${optionenHtml}<option value="neu">${neuText}</option></select>
+   <input name="${neuName}" placeholder="${platzhalter}" aria-label="${platzhalter}" hidden style="margin-top:.5rem">`;
 const eingabe = (name, wert, extra) => `<input name="${name}" value="${esc(wert ?? "")}" ${extra || ""}>`;
 
 function auftragsListe(liste, ohneStueck) {
@@ -542,8 +547,8 @@ function seiteAuftragFormular(a, stueckVorauswahl) {
     `<form class="raster" data-form="auftrag" data-id="${a?.id ?? ""}">
     <div class="karte pad raster zwei">
       ${feld("Titel", eingabe("titel", a?.titel, 'required placeholder="Was wird gebraucht?"'), "", "voll")}
-      ${feld("Stück", `<select name="stueckId">${optionen(Z.stuecke.filter((s) => s.status !== "ARCHIVIERT" || s.id === a?.stueckId).map((s) => [s.id, s.titel]), a?.stueckId ?? stueckVorauswahl, "Allgemein (ohne Stück)")}</select>`)}
-      ${feld("Abteilung", `<select name="abteilung">${optionen(Z.abteilungen, a?.abteilung, "–")}</select>`)}
+      ${feld("Stück", mitNeu("stueckId", optionen(Z.stuecke.filter((s) => s.status !== "ARCHIVIERT" || s.id === a?.stueckId).map((s) => [s.id, s.titel]), a?.stueckId ?? stueckVorauswahl, "Allgemein (ohne Stück)"), "neuesStueck", "+ Neues Stück anlegen …", "Titel des neuen Stücks, z. B. Otello"))}
+      ${feld("Abteilung", mitNeu("abteilung", optionen(Z.abteilungen, a?.abteilung, "–"), "neueAbteilung", "+ Neue Abteilung …", "Name der Abteilung"))}
       ${feld("Priorität", `<select name="prioritaet">${optionen(Object.entries(PRIO), a?.prioritaet ?? "MITTEL")}</select>`)}
       ${feld("Deadline", eingabe("faelligAm", a?.faelligAm, 'type="date"'))}
       ${feld("Beschreibung", `<textarea name="beschreibung" rows="3" placeholder="Was genau, wofür, Besonderheiten …">${esc(a?.beschreibung)}</textarea>`, "", "voll")}
@@ -623,7 +628,7 @@ function seiteEintragFormular(e) {
   return `<a class="klein gd" href="${e ? "#/bibliothek/" + e.id : "#/bibliothek"}" style="display:inline-flex;align-items:center;gap:.2rem;margin-bottom:.75rem">${sym("zurueck", "k")}Zurück</a>` +
     kopf(e ? "Eintrag bearbeiten" : "Neuer Eintrag", e ? e.titel : "Maße und Bilder kommen im nächsten Schritt.") + `<form data-form="eintrag" data-id="${e?.id ?? ""}"><div class="karte pad raster zwei">
     ${feld("Titel", eingabe("titel", e?.titel, 'required placeholder="z. B. Kabelverschraubung metrisch"'), "", "voll")}
-    ${feld("Kategorie", `<select name="kategorie">${optionen(Z.kategorien, e?.kategorie, "–")}</select>`)}
+    ${feld("Kategorie", mitNeu("kategorie", optionen(Z.kategorien, e?.kategorie, "–"), "neueKategorie", "+ Neue Kategorie …", "Name der Kategorie"))}
     ${feld("Quelle", eingabe("quelle", e?.quelle, 'placeholder="Datenblatt, Norm, selbst gemessen"'))}
     ${feld("Beschreibung", `<textarea name="beschreibung" rows="3">${esc(e?.beschreibung)}</textarea>`, "", "voll")}
     ${feld("Druckhinweis", `<textarea name="druckhinweis" rows="2" placeholder="z. B. Bohrung +0,3 mm bei PETG">${esc(e?.druckhinweis)}</textarea>`, "erprobte Zugaben und Toleranzen", "voll")}
@@ -681,7 +686,8 @@ function melden(text) {
 
 // ---------- Navigation und Anzeige ----------
 const NAV = [["#/", "Übersicht", "start"], ["#/stuecke", "Stücke", "stueck"], ["#/auftraege", "Aufträge", "auftrag"], ["#/bibliothek", "Maße", "mass"], ["#/mehr", "Mehr", "mehr"]];
-const MARKE = `<div class="marke"><span class="logo">3D</span><span>Druckaufträge<small>Wuppertaler Bühnen</small></span></div>`;
+// Zeichen der Wuppertaler Bühnen (ohne Schriftzug), Quelle: wuppertaler-buehnen.de
+const MARKE = `<div class="marke"><svg class="logo" viewBox="17 0 351 228" aria-hidden="true"><path d="M17.41 0l71.661 228h54.537L192.16 60.886h.705L241.065 228H295.6L367.59 0H17.41z"/></svg><span>Druckaufträge<small>3D-Druck</small></span></div>`;
 
 function anzeigen() {
   const [pfad, abfrage] = (location.hash.slice(1) || "/").split("?");
@@ -744,6 +750,13 @@ const FORMULARE = {
       form.querySelector("details").open = true;
       return null;
     }
+    if (d.stueckId === "neu") {
+      const titel = (d.neuesStueck || "").trim();
+      let st = Z.stuecke.find((x) => x.titel.toLowerCase() === titel.toLowerCase());
+      if (!st) Z.stuecke.push((st = { id: neueId(), titel, sparte: "", status: "AKTIV", spielzeit: "", premiere: "", spielstaette: "", ansprechpersonen: "", notizen: "" }));
+      d.stueckId = String(st.id);
+    }
+    if (d.abteilung === "neu") { d.abteilung = (d.neueAbteilung || "").trim(); if (!Z.abteilungen.includes(d.abteilung)) Z.abteilungen.push(d.abteilung); }
     const daten = { titel: d.titel.trim(), beschreibung: d.beschreibung.trim(), stueckId: Number(d.stueckId) || null, abteilung: d.abteilung, prioritaet: d.prioritaet, faelligAm: d.faelligAm, umfang: d.umfang, ansprechperson: d.ansprechperson.trim(), erhaltenAm: d.erhaltenAm || heute(), stueckzahl: zahl(d.stueckzahl) ?? 1, material: d.material, farbe: d.farbe.trim(), nachbearbeitung: d.nachbearbeitung.trim(),
       filamentG: zahl(d.filamentG), filamentIstG: zahl(d.filamentIstG), druckzeitH: zahl(d.druckzeitH), druckzeitIstH: zahl(d.druckzeitIstH), l: zahl(d.l), b: zahl(d.b), h: zahl(d.h) };
     let a = Z.auftraege.find((x) => x.id === Number(form.dataset.id));
@@ -753,6 +766,7 @@ const FORMULARE = {
     return ["#/auftraege/" + a.id, "Auftrag gespeichert"];
   },
   eintrag(d, form) {
+    if (d.kategorie === "neu") { d.kategorie = (d.neueKategorie || "").trim(); if (!Z.kategorien.includes(d.kategorie)) Z.kategorien.push(d.kategorie); }
     const daten = { titel: d.titel.trim(), kategorie: d.kategorie, quelle: d.quelle.trim(), beschreibung: d.beschreibung.trim(), druckhinweis: d.druckhinweis.trim(), schlagworte: d.schlagworte.trim() };
     let e = Z.eintraege.find((x) => x.id === Number(form.dataset.id));
     if (e) Object.assign(e, daten); else Z.eintraege.push((e = { id: neueId(), masse: [], bilder: [], ...daten }));
@@ -881,6 +895,11 @@ document.addEventListener("change", async (ereignis) => {
     await sichern();
     anzeigen();
     melden(`${a.nummer}: ${STATUS[a.status]}`);
+  } else if (el.dataset.neu) {
+    const feld = el.form.elements[el.dataset.neu];
+    feld.hidden = el.value !== "neu";
+    feld.required = el.value === "neu";
+    if (el.value === "neu") feld.focus();
   } else if (el.id === "formstatus") {
     document.getElementById("formdrucker").hidden = el.value !== "IM_DRUCK";
   } else if (el.id === "statusfilter") {

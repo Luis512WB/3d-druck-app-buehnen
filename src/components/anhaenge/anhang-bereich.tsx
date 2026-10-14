@@ -43,7 +43,7 @@ export function AnhangBereich({
                 <input type="hidden" name="id" value={d.id} />
                 <BestaetigenKnopf
                   frage={`„${d.dateiname}“ wirklich löschen?`}
-                  className="grid size-8 place-items-center rounded-lg text-gedaempft hover:text-red-600"
+                  className="grid size-8 place-items-center rounded-lg text-gedaempft hover:text-warnung"
                 >
                   ✕
                 </BestaetigenKnopf>

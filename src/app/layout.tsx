@@ -1,23 +1,26 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
+import { DARSTELLUNGEN, type Darstellung } from "@/lib/werte";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "3D-Druck Bühnen", template: "%s · 3D-Druck Bühnen" },
+  title: { default: "Druckaufträge · Wuppertaler Bühnen", template: "%s · Druckaufträge" },
   description: "3D-Druck-Aufträge dokumentieren und planen",
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f1113" },
-  ],
+  themeColor: "#111315",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Dunkel ist Standard; die Wahl wird unter Einstellungen pro Gerät im Cookie gespeichert.
+  const gespeichert = (await cookies()).get("darstellung")?.value;
+  const darstellung: Darstellung = gespeichert && gespeichert in DARSTELLUNGEN ? (gespeichert as Darstellung) : "dunkel";
+
   return (
-    <html lang="de" className="h-full antialiased">
+    <html lang="de" data-theme={darstellung} className="h-full antialiased">
       <body className="min-h-full">{children}</body>
     </html>
   );

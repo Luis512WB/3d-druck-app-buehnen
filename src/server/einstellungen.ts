@@ -2,9 +2,11 @@
 
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { erfordereBenutzer } from "@/lib/auth";
 import { db } from "@/lib/db";
 import type { FormZustand } from "@/lib/typen";
+import { DARSTELLUNGEN } from "@/lib/werte";
 
 export async function abteilungAnlegen(_: FormZustand, formData: FormData): Promise<FormZustand> {
   await erfordereBenutzer("ADMIN");
@@ -54,4 +56,12 @@ export async function passwortAendern(_: FormZustand, formData: FormData): Promi
 
   await db.benutzer.update({ where: { id: benutzer.id }, data: { passwortHash: await bcrypt.hash(neu, 12) } });
   return { ok: true };
+}
+
+export async function darstellungSetzen(formData: FormData) {
+  await erfordereBenutzer();
+  const wert = String(formData.get("darstellung"));
+  if (!(wert in DARSTELLUNGEN)) return;
+  (await cookies()).set("darstellung", wert, { path: "/", maxAge: 60 * 60 * 24 * 365 * 5, sameSite: "lax" });
+  revalidatePath("/", "layout");
 }

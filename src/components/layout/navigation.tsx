@@ -31,6 +31,21 @@ function istAktiv(pfad: string, href: string) {
   return pfad.startsWith(href);
 }
 
+function Marke() {
+  return (
+    <div className="flex items-center gap-2.5">
+      {/* Zeichen der Wuppertaler Bühnen (ohne Schriftzug), Quelle: wuppertaler-buehnen.de */}
+      <svg viewBox="17 0 351 228" className="h-[22px] w-auto shrink-0 text-schrift" fill="currentColor" aria-hidden>
+        <path d="M17.41 0l71.661 228h54.537L192.16 60.886h.705L241.065 228H295.6L367.59 0H17.41z" />
+      </svg>
+      <span className="border-l border-linie pl-2.5 leading-tight">
+        <span className="block text-[15px] font-bold">Druckaufträge</span>
+        <span className="block font-mono text-[10px] uppercase tracking-[0.08em] text-gedaempft">3D-Druck</span>
+      </span>
+    </div>
+  );
+}
+
 function Symbol({ d }: { d: string }) {
   return (
     <svg
@@ -38,9 +53,9 @@ function Symbol({ d }: { d: string }) {
       className="size-5.5 shrink-0"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      strokeWidth="1.6"
+      strokeLinecap="square"
+      strokeLinejoin="miter"
       aria-hidden
     >
       <path d={d} />
@@ -55,7 +70,9 @@ export function Navigation({ fuss }: { fuss?: React.ReactNode }) {
     <>
       {/* Desktop: Seitenleiste */}
       <nav className="fixed inset-y-0 left-0 hidden w-56 flex-col border-r border-linie bg-flaeche px-3 py-5 md:flex">
-        <div className="px-3 pb-5 text-sm font-semibold tracking-tight">3D-Druck Bühnen</div>
+        <div className="px-2 pb-6">
+          <Marke />
+        </div>
         <ul className="flex flex-1 flex-col gap-1">
           {PUNKTE.filter((p) => !p.nurMobil).map((p) => {
             const aktiv = istAktiv(pfad, p.href);
@@ -64,10 +81,10 @@ export function Navigation({ fuss }: { fuss?: React.ReactNode }) {
                 <Link
                   href={p.href}
                   aria-current={aktiv ? "page" : undefined}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                  className={`relative flex items-center gap-3 rounded-[4px] px-3 py-2.5 text-sm ${
                     aktiv
-                      ? "bg-akzent-zart font-medium text-akzent"
-                      : "text-gedaempft hover:bg-hintergrund hover:text-schrift"
+                      ? "bg-flaeche-2 font-semibold text-schrift before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:bg-akzent"
+                      : "font-medium text-gedaempft hover:bg-flaeche-2 hover:text-schrift"
                   }`}
                 >
                   <Symbol d={p.symbol} />
@@ -80,7 +97,10 @@ export function Navigation({ fuss }: { fuss?: React.ReactNode }) {
         {fuss}
       </nav>
 
-      {/* Handy: Leiste unten */}
+      {/* Handy: Kopfzeile mit Marke und Leiste unten */}
+      <header className="sticky top-0 z-10 border-b border-linie bg-hintergrund px-4 pt-[calc(0.7rem+env(safe-area-inset-top))] pb-2.5 md:hidden">
+        <Marke />
+      </header>
       <nav className="fixed inset-x-0 bottom-0 z-10 border-t border-linie bg-flaeche pb-[env(safe-area-inset-bottom)] md:hidden">
         <ul className="grid grid-cols-5">
           {PUNKTE.filter((p) => !p.nurDesktop).map((p) => {
@@ -90,8 +110,10 @@ export function Navigation({ fuss }: { fuss?: React.ReactNode }) {
                 <Link
                   href={p.href}
                   aria-current={aktiv ? "page" : undefined}
-                  className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] ${
-                    aktiv ? "font-medium text-akzent" : "text-gedaempft"
+                  className={`relative flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-semibold ${
+                    aktiv
+                      ? "text-schrift before:absolute before:inset-x-[28%] before:-top-px before:h-0.5 before:bg-akzent"
+                      : "text-gedaempft"
                   }`}
                 >
                   <Symbol d={p.symbol} />

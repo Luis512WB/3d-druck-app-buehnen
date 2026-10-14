@@ -29,6 +29,9 @@ export function AuftragFormular({
   const [zustand, aktion, laeuft] = useActionState<FormZustand, FormData>(auftragSpeichern, {});
   const a = auftrag;
   const [status, setStatus] = useState(a?.status ?? "ANGEFRAGT");
+  // „Neu …“ in den Auswahlfeldern: Stück oder Abteilung direkt hier anlegen, ohne die Seite zu wechseln.
+  const [stueckWahl, setStueckWahl] = useState(String(a?.stueckId ?? stueckVorauswahl ?? ""));
+  const [abteilungWahl, setAbteilungWahl] = useState(String(a?.abteilungId ?? ""));
   const dezimal = { inputMode: "decimal" as const, className: EINGABE };
 
   return (
@@ -40,24 +43,51 @@ export function AuftragFormular({
           <input name="titel" required defaultValue={a?.titel} placeholder="Was wird gebraucht?" className={EINGABE} />
         </Feld>
         <Feld label="Stück">
-          <select name="stueckId" defaultValue={a?.stueckId ?? stueckVorauswahl ?? ""} className={EINGABE}>
+          <select name="stueckId" value={stueckWahl} onChange={(e) => setStueckWahl(e.target.value)} className={EINGABE}>
             <option value="">Allgemein (ohne Stück)</option>
             {stuecke.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
               </option>
             ))}
+            <option value="neu">+ Neues Stück anlegen …</option>
           </select>
+          {stueckWahl === "neu" && (
+            <input
+              name="neuesStueck"
+              required
+              autoFocus
+              placeholder="Titel des neuen Stücks, z. B. Otello"
+              aria-label="Titel des neuen Stücks"
+              className={`${EINGABE} mt-2`}
+            />
+          )}
         </Feld>
         <Feld label="Abteilung">
-          <select name="abteilungId" defaultValue={a?.abteilungId ?? ""} className={EINGABE}>
+          <select
+            name="abteilungId"
+            value={abteilungWahl}
+            onChange={(e) => setAbteilungWahl(e.target.value)}
+            className={EINGABE}
+          >
             <option value="">–</option>
             {abteilungen.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
               </option>
             ))}
+            <option value="neu">+ Neue Abteilung …</option>
           </select>
+          {abteilungWahl === "neu" && (
+            <input
+              name="neueAbteilung"
+              required
+              autoFocus
+              placeholder="Name der Abteilung"
+              aria-label="Name der neuen Abteilung"
+              className={`${EINGABE} mt-2`}
+            />
+          )}
         </Feld>
         <Feld label="Priorität">
           <select name="prioritaet" defaultValue={a?.prioritaet ?? "MITTEL"} className={EINGABE}>

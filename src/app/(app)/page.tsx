@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { erfordereBenutzer } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { PRIORITAET_RANG } from "@/lib/format";
+import { PRIORITAET_RANG, istUeberfaellig } from "@/lib/format";
 import { ABGESCHLOSSENE_STATUS } from "@/lib/werte";
 import { AUFTRAG_FUER_LISTE, AuftragsListe } from "@/components/auftraege/auftrags-liste";
 import { DRUCKER_MIT_LAUFENDEM_JOB, DruckerListe } from "@/components/drucker-liste";
@@ -25,16 +25,22 @@ export default async function Uebersicht() {
       (a.faelligAm?.getTime() ?? Infinity) - (b.faelligAm?.getTime() ?? Infinity),
   );
 
+  const imDruck = offene.filter((a) => a.status === "IM_DRUCK").length;
+  const ueberfaellig = offene.filter((a) => istUeberfaellig(a.faelligAm, a.status)).length;
+  // Farbe nur, wenn sie etwas bedeutet: laufende Drucke und Überfälliges.
   const kacheln = [
-    { href: "/auftraege", zahl: offene.length, name: "Offene Aufträge" },
-    { href: "/stuecke", zahl: stuecke, name: "Stücke" },
-    { href: "/bibliothek", zahl: eintraege, name: "Einträge in der Maßbibliothek" },
+    { href: "/auftraege", zahl: offene.length, name: "Offene Aufträge", farbe: "" },
+    { href: "/auftraege?status=IM_DRUCK", zahl: imDruck, name: "Im Druck", farbe: imDruck ? "text-akzent" : "" },
+    { href: "/auftraege", zahl: ueberfaellig, name: "Überfällig", farbe: ueberfaellig ? "text-warnung" : "" },
+    { href: "/bibliothek", zahl: eintraege, name: "Maßbibliothek", farbe: "" },
   ];
+  const heute = new Intl.DateTimeFormat("de-DE", { weekday: "long", day: "numeric", month: "long" }).format(new Date());
 
   return (
     <>
       <Seitenkopf
         titel={`Hallo ${benutzer.name}`}
+        text={`${heute} · ${stuecke} ${stuecke === 1 ? "Stück" : "Stücke"} in Arbeit`}
         aktion={
           <Link href="/auftraege/neu" className={KNOPF}>
             Neuer Auftrag
@@ -42,16 +48,18 @@ export default async function Uebersicht() {
         }
       />
 
-      <div className="grid grid-cols-3 gap-3">
-        {kacheln.map((k) => (
-          <Link key={k.href} href={k.href}>
-            <Karte className="h-full p-4 transition-colors hover:border-akzent">
-              <div className="text-2xl font-semibold tabular-nums sm:text-3xl">{k.zahl}</div>
-              <div className="mt-1 text-xs text-gedaempft sm:text-sm">{k.name}</div>
-            </Karte>
+      <Karte className="grid grid-cols-2 overflow-hidden sm:grid-cols-4">
+        {kacheln.map((k, i) => (
+          <Link
+            key={k.name}
+            href={k.href}
+            className={`border-linie-2 px-4 py-3.5 hover:bg-flaeche-2 ${i % 2 === 0 ? "border-r" : ""} ${i < 2 ? "border-b sm:border-b-0" : ""} sm:border-r sm:last:border-r-0`}
+          >
+            <div className={`font-mono text-3xl font-semibold leading-tight ${k.farbe}`}>{k.zahl}</div>
+            <div className="text-xs font-medium text-gedaempft">{k.name}</div>
           </Link>
         ))}
-      </div>
+      </Karte>
 
       <Abschnitt
         titel="Als Nächstes"

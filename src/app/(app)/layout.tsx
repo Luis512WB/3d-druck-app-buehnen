@@ -5,7 +5,7 @@ import { abmelden } from "@/server/anmeldung";
 function Abmelden() {
   return (
     <form action={abmelden}>
-      <button className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-gedaempft hover:bg-hintergrund hover:text-schrift">
+      <button className="w-full rounded-[4px] border-t border-linie-2 px-3 py-3 text-left text-sm text-gedaempft hover:text-schrift">
         Abmelden
       </button>
     </form>

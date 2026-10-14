@@ -1,48 +1,102 @@
 @import "tailwindcss";
 
-/* Farben und Formen: docs/DESIGN.md */
+/* Gestaltung: docs/DESIGN.md – nüchtern und technisch, wenig Farbe, harte Kanten,
+   Maschinenschrift für Nummern und Maße, Petrol nur als Signalfarbe. Standard ist dunkel. */
 :root {
-  --hintergrund: #fafafa;
+  --hintergrund: #f4f3ef;
   --flaeche: #ffffff;
-  --linie: #e5e7eb;
-  --schrift: #111827;
-  --gedaempft: #6b7280;
-  --akzent: #2563eb;
+  --flaeche-2: #f8f7f4;
+  --linie: #d9d6ce;
+  --linie-2: #e7e5df;
+  --schrift: #1b1b19;
+  --gedaempft: #6b6860;
+  --gedaempft-2: #9b978d;
+  --akzent: #0f8a7e;
+  --akzent-2: #0b7369;
   --akzent-schrift: #ffffff;
-  --akzent-zart: #eff6ff;
+  --akzent-zart: rgba(15, 138, 126, 0.08);
+  --warnung: #c0504d;
+  color-scheme: light;
+}
+
+/* Dunkel ist Standard (Cookie „darstellung“, siehe src/app/layout.tsx). */
+:root[data-theme="dunkel"] {
+  --hintergrund: #111315;
+  --flaeche: #181a1d;
+  --flaeche-2: #1d2024;
+  --linie: #2c3035;
+  --linie-2: #24272b;
+  --schrift: #e7e5e0;
+  --gedaempft: #9b988f;
+  --gedaempft-2: #6c6962;
+  --akzent: #4fc1b0;
+  --akzent-2: #6fd3c4;
+  --akzent-schrift: #0d1a18;
+  --akzent-zart: rgba(79, 193, 176, 0.12);
+  --warnung: #e07a74;
+  color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --hintergrund: #0f1113;
-    --flaeche: #181b1f;
-    --linie: #2a2e34;
-    --schrift: #f3f4f6;
-    --gedaempft: #9ca3af;
-    --akzent: #60a5fa;
-    --akzent-schrift: #0f1113;
-    --akzent-zart: #172033;
+  :root[data-theme="system"] {
+    --hintergrund: #111315;
+    --flaeche: #181a1d;
+    --flaeche-2: #1d2024;
+    --linie: #2c3035;
+    --linie-2: #24272b;
+    --schrift: #e7e5e0;
+    --gedaempft: #9b988f;
+    --gedaempft-2: #6c6962;
+    --akzent: #4fc1b0;
+    --akzent-2: #6fd3c4;
+    --akzent-schrift: #0d1a18;
+    --akzent-zart: rgba(79, 193, 176, 0.12);
+    --warnung: #e07a74;
+    color-scheme: dark;
   }
 }
 
 @theme inline {
   --color-hintergrund: var(--hintergrund);
   --color-flaeche: var(--flaeche);
+  --color-flaeche-2: var(--flaeche-2);
   --color-linie: var(--linie);
+  --color-linie-2: var(--linie-2);
   --color-schrift: var(--schrift);
   --color-gedaempft: var(--gedaempft);
+  --color-gedaempft-2: var(--gedaempft-2);
   --color-akzent: var(--akzent);
+  --color-akzent-2: var(--akzent-2);
   --color-akzent-schrift: var(--akzent-schrift);
   --color-akzent-zart: var(--akzent-zart);
-  --font-sans: Inter, ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
-}
-
-html {
-  color-scheme: light dark;
+  --color-warnung: var(--warnung);
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace;
 }
 
 body {
   background: var(--hintergrund);
   color: var(--schrift);
   font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Zahlenfelder in Maschinenschrift, wie die Maße in den Listen. */
+input[inputmode="decimal"],
+input[inputmode="numeric"] {
+  font-family: var(--font-mono);
+}
+
+/* Eigener Pfeil für Auswahlfelder, damit sie überall gleich aussehen. */
+select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--gedaempft) 50%),
+    linear-gradient(135deg, var(--gedaempft) 50%, transparent 50%);
+  background-position:
+    right 0.95rem center,
+    right 0.65rem center;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 2rem;
 }

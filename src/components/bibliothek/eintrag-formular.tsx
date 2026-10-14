@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import type { Bibliothekseintrag } from "@prisma/client";
 import type { FormZustand } from "@/lib/typen";
 import { eintragSpeichern } from "@/server/bibliothek";
@@ -14,6 +14,7 @@ export function EintragFormular({
   kategorien: { id: number; name: string }[];
 }) {
   const [zustand, aktion, laeuft] = useActionState<FormZustand, FormData>(eintragSpeichern, {});
+  const [kategorieWahl, setKategorieWahl] = useState(String(eintrag?.kategorieId ?? ""));
 
   return (
     <form action={aktion} className="grid gap-4 sm:grid-cols-2">
@@ -29,14 +30,30 @@ export function EintragFormular({
         />
       </Feld>
       <Feld label="Kategorie">
-        <select name="kategorieId" defaultValue={eintrag?.kategorieId ?? ""} className={EINGABE}>
+        <select
+          name="kategorieId"
+          value={kategorieWahl}
+          onChange={(e) => setKategorieWahl(e.target.value)}
+          className={EINGABE}
+        >
           <option value="">–</option>
           {kategorien.map((k) => (
             <option key={k.id} value={k.id}>
               {k.name}
             </option>
           ))}
+          <option value="neu">+ Neue Kategorie …</option>
         </select>
+        {kategorieWahl === "neu" && (
+          <input
+            name="neueKategorie"
+            required
+            autoFocus
+            placeholder="Name der Kategorie"
+            aria-label="Name der neuen Kategorie"
+            className={`${EINGABE} mt-2`}
+          />
+        )}
       </Feld>
       <Feld label="Quelle" hinweis="Datenblatt, Norm, selbst gemessen">
         <input name="quelle" defaultValue={eintrag?.quelle ?? ""} className={EINGABE} />

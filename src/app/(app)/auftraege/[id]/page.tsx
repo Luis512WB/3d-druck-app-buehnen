@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { erfordereBenutzer } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { druckerFuerAuswahl } from "@/lib/drucker";
 import {
   PRIORITAET_FARBE,
   datum,
@@ -41,11 +42,7 @@ export default async function AuftragDetail({ params }: { params: Promise<{ id: 
   });
   if (!auftrag) notFound();
   const a = auftrag;
-  const drucker = await db.drucker.findMany({
-    where: { zustand: { not: "AUSSER_BETRIEB" } },
-    orderBy: { name: "asc" },
-    select: { id: true, name: true, zustand: true },
-  });
+  const drucker = await druckerFuerAuswahl();
 
   const hatHauptmasse = a.laengeMm != null || a.breiteMm != null || a.hoeheMm != null;
   const daten: [string, React.ReactNode][] = [
@@ -56,7 +53,7 @@ export default async function AuftragDetail({ params }: { params: Promise<{ id: 
     [
       "Deadline",
       a.faelligAm && (
-        <span className={istUeberfaellig(a.faelligAm, a.status) ? "font-medium text-red-600 dark:text-red-400" : ""}>
+        <span className={istUeberfaellig(a.faelligAm, a.status) ? "font-medium text-warnung" : ""}>
           {datum(a.faelligAm)}
         </span>
       ),
@@ -100,9 +97,9 @@ export default async function AuftragDetail({ params }: { params: Promise<{ id: 
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <StatusAuswahl
-            // Neu aufbauen, sobald sich der gespeicherte Stand ändert (auch durch ein anderes Gerät).
-            key={`${a.status}-${a.druckjobs[0]?.druckerId ?? ""}`}
             auftragId={a.id}
+            bezeichnung={`${a.nummer} · ${a.titel}`}
+            gross
             status={a.status}
             druckerId={a.druckjobs[0]?.druckerId ?? null}
             drucker={drucker}
@@ -127,7 +124,7 @@ export default async function AuftragDetail({ params }: { params: Promise<{ id: 
             <input type="hidden" name="id" value={a.id} />
             <BestaetigenKnopf
               frage={`Auftrag ${a.nummer} mit allen Bildern, Maßen und Notizen endgültig löschen?`}
-              className={`${KNOPF_KLEIN} text-red-600 dark:text-red-400`}
+              className={`${KNOPF_KLEIN} text-warnung`}
             >
               Löschen
             </BestaetigenKnopf>
@@ -136,7 +133,7 @@ export default async function AuftragDetail({ params }: { params: Promise<{ id: 
       </header>
 
       {/* Am Desktop zweispaltig: links Bilder groß, rechts Maße und Daten – für den Bildschirm neben dem CAD. */}
-      <div className="grid gap-x-8 lg:grid-cols-2">
+      <div className="grid gap-x-8 lg:grid-cols-2 [&>*]:min-w-0">
         <div>
           <Abschnitt titel="Bilder und Dateien">
             <AnhangBereich anhaenge={a.anhaenge} auftragId={a.id} />
@@ -195,7 +192,7 @@ export default async function AuftragDetail({ params }: { params: Promise<{ id: 
                       <input type="hidden" name="id" value={n.id} />
                       <BestaetigenKnopf
                         frage="Diese Notiz löschen?"
-                        className="grid size-8 place-items-center rounded-lg text-gedaempft hover:text-red-600"
+                        className="grid size-8 place-items-center rounded-lg text-gedaempft hover:text-warnung"
                       >
                         ✕
                       </BestaetigenKnopf>

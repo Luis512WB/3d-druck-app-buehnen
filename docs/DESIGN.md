@@ -4,34 +4,34 @@ Leitbild: **schlicht, modern, ruhig.** Die Inhalte (Bilder, Maße, Status) stehe
 
 ## Grundsätze
 
-1. **Mobil zuerst.** Jede Ansicht wird für das Handy entworfen und am Desktop erweitert – nicht umgekehrt.
-2. **Wenig Farbe, gezielt eingesetzt.** Neutrale Flächen; Farbe nur für Priorität, Status, Abteilung und die eine Hauptaktion pro Seite.
-3. **Eine Hauptaktion pro Ansicht.** Gut erreichbar mit dem Daumen (mobil unten rechts).
-4. **Schnell erfassen, später verfeinern.** Kurze Formulare, optionale Felder eingeklappt.
-5. **Hell und dunkel.** Folgt der Geräteeinstellung – dunkel ist auf der Bühne und im Zuschauerraum wichtig.
+1. **Werkstattzettel statt Webseite.** Nüchtern und technisch: harte Kanten (3–6 px Radius), Linien statt Schatten, keine Verläufe.
+2. **Wenig Farbe, gezielt eingesetzt.** Neutrale Grautöne; Petrol als einzige Signalfarbe (Hauptknopf, „Im Druck“, aktive Navigation). Gedämpftes Rot nur für Überfälliges und Dringendes.
+3. **Maschinenschrift für Daten.** Auftragsnummern, Maße, Gramm, Status-Kennzeichen und Abschnittsüberschriften in Monospace.
+4. **Mobil zuerst.** Jede Ansicht wird für das Handy entworfen und am Desktop erweitert.
+5. **Dunkel als Standard.** Umschaltbar unter Einstellungen (Dunkel / Hell / wie das Gerät), pro Gerät gespeichert.
+6. **Status überall direkt änderbar.** In jeder Auftragsliste ist der Status ein Auswahlfeld; „Im Druck“ fragt in einem Fenster nach dem Drucker.
+7. **Neues ohne Umweg.** In Auswahlfeldern für Stück, Abteilung und Kategorie gibt es „+ Neu …“ – anlegen, ohne das Formular zu verlassen.
 
 ## Farben
 
-| Zweck | Hell | Dunkel |
+| Zweck | Dunkel (Standard) | Hell |
 |---|---|---|
-| Hintergrund | `#FAFAFA` | `#0F1113` |
-| Fläche (Karten) | `#FFFFFF` | `#181B1F` |
-| Linie | `#E5E7EB` | `#2A2E34` |
-| Text | `#111827` | `#F3F4F6` |
-| Text gedämpft | `#6B7280` | `#9CA3AF` |
-| Akzent | `#2563EB` | `#60A5FA` |
+| Hintergrund | `#111315` | `#F4F3EF` |
+| Fläche | `#181A1D` | `#FFFFFF` |
+| Linie | `#2C3035` | `#D9D6CE` |
+| Text | `#E7E5E0` | `#1B1B19` |
+| Text gedämpft | `#9B988F` | `#6B6860` |
+| Akzent (Petrol) | `#4FC1B0` | `#0F8A7E` |
+| Warnung | `#E07A74` | `#C0504D` |
 
-**Priorität:** Niedrig – Grau · Mittel – Blau · Hoch – Orange · Dringend – Rot. Immer mit Text oder Symbol, nie nur über Farbe.
+**Status:** kleines Farbquadrat bzw. farbige Kante am Auswahlfeld – Angefragt/Pausiert grau, Planung/Konstruktion blaugrau, Druckbereit ocker, Im Druck petrol, Nachbearbeitung ton, Fertig/Geliefert salbeigrün, Abgebrochen gedämpftes Rot.
 
-**Status:** als kleine Chips; „Im Druck“ hervorgehoben, „Fertig/Geliefert“ grün, „Pausiert/Abgebrochen“ gedämpft.
-
-**Filamentfarbe:** kleiner Farbpunkt neben der Bezeichnung.
+**Marke:** das „W“ der Wuppertaler Bühnen (Zeichen ohne Schriftzug, von wuppertaler-buehnen.de) neben „Druckaufträge“.
 
 ## Typografie und Form
 
-- Schrift: Systemschrift bzw. Inter; Zahlen (Maße, Gramm) mit Tabellenziffern.
-- Größen: 16 px Fließtext (verhindert Zoom in iOS-Formularen), klare Überschriften-Stufen.
-- Ecken 10–12 px, dezente Linien statt kräftiger Schatten, großzügige Abstände.
+- Schrift: Systemschrift; Monospace (`ui-monospace`, Cascadia Mono, SF Mono) für Daten.
+- 16 px in Eingabefeldern (verhindert Zoom in iOS-Formularen).
 - Touch-Ziele mindestens 44 × 44 px.
 
 ## Navigation

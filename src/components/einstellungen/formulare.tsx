@@ -52,7 +52,7 @@ export function PasswortAendern() {
           Passwort ändern
         </button>
         <Fehler text={zustand.fehler} />
-        {zustand.ok && <p className="text-sm text-green-600">Passwort geändert.</p>}
+        {zustand.ok && <p className="text-sm text-akzent">Passwort geändert.</p>}
       </div>
     </form>
   );

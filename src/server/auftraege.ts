@@ -55,12 +55,36 @@ async function druckjobAbgleichen(auftragId: number, vorher: string | null, stat
 export async function auftragSpeichern(_: FormZustand, formData: FormData): Promise<FormZustand> {
   const benutzer = await erfordereBenutzer("ADMIN", "BEARBEITER");
 
-  const eingabe = AuftragSchema.safeParse(Object.fromEntries(formData));
+  // „Neu …“ gewählt: erst alles prüfen, dann Stück bzw. Abteilung anlegen – sonst bliebe bei
+  // einem Eingabefehler ein leeres Stück zurück.
+  const roh = Object.fromEntries(formData);
+  const neuesStueck = roh.stueckId === "neu" ? String(roh.neuesStueck ?? "").trim() : null;
+  const neueAbteilung = roh.abteilungId === "neu" ? String(roh.neueAbteilung ?? "").trim() : null;
+  if (neuesStueck === "") return { fehler: "Bitte einen Titel für das neue Stück eingeben." };
+  if (neueAbteilung === "") return { fehler: "Bitte einen Namen für die neue Abteilung eingeben." };
+
+  const eingabe = AuftragSchema.safeParse({
+    ...roh,
+    stueckId: neuesStueck ? "" : roh.stueckId,
+    abteilungId: neueAbteilung ? "" : roh.abteilungId,
+  });
   if (!eingabe.success) return { fehler: ersterFehler(eingabe.error) };
 
   const { id, druckerId, druckzeitGeschaetztH, druckzeitTatsaechlichH, erhaltenAm, stueckzahl, ...rest } = eingabe.data;
   const druckerFehler = await druckerPruefen(id, rest.status, druckerId);
   if (druckerFehler) return { fehler: druckerFehler };
+
+  if (neuesStueck) {
+    // Gibt es das Stück schon (gleicher Titel), wird es verwendet statt doppelt angelegt.
+    const vorhanden = await db.stueck.findFirst({ where: { titel: neuesStueck } });
+    rest.stueckId = (vorhanden ?? (await db.stueck.create({ data: { titel: neuesStueck } }))).id;
+  }
+  if (neueAbteilung) {
+    rest.abteilungId = (
+      await db.abteilung.upsert({ where: { name: neueAbteilung }, update: { aktiv: true }, create: { name: neueAbteilung } })
+    ).id;
+  }
+
   const daten = {
     ...rest,
     stueckzahl: stueckzahl ?? 1,
