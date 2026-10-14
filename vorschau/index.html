@@ -21,20 +21,20 @@
 -->
 <style>
 /* Gestaltung: nüchtern und technisch wie ein Werkstattzettel. Wenig Farbe, harte Kanten,
-   Maschinenschrift für Nummern und Maße, Orange nur als Signalfarbe. Standard ist dunkel. */
+   Maschinenschrift für Nummern und Maße, Petrol nur als Signalfarbe. Standard ist dunkel. */
 :root{
   --hg:#f4f3ef;--fl:#fff;--fl2:#f8f7f4;--li:#d9d6ce;--li2:#e7e5df;--tx:#1b1b19;--gd:#6b6860;--gd2:#9b978d;
-  --ak:#d9480f;--ak2:#b83a0b;--akt:#fff;--akz:rgba(217,72,15,.08);--rot:#c92a2a;
+  --ak:#0f8a7e;--ak2:#0b7369;--akt:#fff;--akz:rgba(15,138,126,.08);--rot:#c0504d;
   --mono:ui-monospace,"Cascadia Mono","SF Mono",Menlo,Consolas,monospace;
   --r:6px;--schatten2:0 18px 40px -12px rgba(0,0,0,.35);
 }
 :root[data-theme="dunkel"]{
   --hg:#111315;--fl:#181a1d;--fl2:#1d2024;--li:#2c3035;--li2:#24272b;--tx:#e7e5e0;--gd:#9b988f;--gd2:#6c6962;
-  --ak:#f0862e;--ak2:#ff9d4d;--akt:#111315;--akz:rgba(240,134,46,.12);--rot:#ef5b4c;--schatten2:0 18px 40px -12px rgba(0,0,0,.7);
+  --ak:#4fc1b0;--ak2:#6fd3c4;--akt:#0d1a18;--akz:rgba(79,193,176,.12);--rot:#e07a74;--schatten2:0 18px 40px -12px rgba(0,0,0,.7);
 }
 @media (prefers-color-scheme:dark){:root[data-theme="system"]{
   --hg:#111315;--fl:#181a1d;--fl2:#1d2024;--li:#2c3035;--li2:#24272b;--tx:#e7e5e0;--gd:#9b988f;--gd2:#6c6962;
-  --ak:#f0862e;--ak2:#ff9d4d;--akt:#111315;--akz:rgba(240,134,46,.12);--rot:#ef5b4c;--schatten2:0 18px 40px -12px rgba(0,0,0,.7);
+  --ak:#4fc1b0;--ak2:#6fd3c4;--akt:#0d1a18;--akz:rgba(79,193,176,.12);--rot:#e07a74;--schatten2:0 18px 40px -12px rgba(0,0,0,.7);
 }}
 :root[data-theme="dunkel"]{color-scheme:dark}
 :root[data-theme="hell"]{color-scheme:light}
@@ -63,7 +63,7 @@ nav.unten a{position:relative;display:flex;flex-direction:column;align-items:cen
 nav.unten a.aktiv{color:var(--tx)}
 nav.unten a.aktiv::before{content:"";position:absolute;top:-1px;left:28%;right:28%;height:2px;background:var(--ak)}
 nav.seite{display:none}
-.fab{position:fixed;right:1rem;bottom:calc(4.7rem + env(safe-area-inset-bottom));z-index:19;display:grid;place-items:center;width:54px;height:54px;border-radius:6px;background:var(--ak);color:var(--akt);box-shadow:0 6px 18px -6px rgba(0,0,0,.5)}
+.fab{position:fixed;right:1rem;bottom:calc(4.7rem + env(safe-area-inset-bottom));z-index:19;display:grid;place-items:center;width:54px;height:54px;border-radius:14px;background:var(--ak);color:var(--akt);box-shadow:0 6px 18px -6px rgba(0,0,0,.5)}
 .fab svg{width:24px;height:24px;stroke-width:2.2}
 @media (min-width:900px){
   .leiste,nav.unten,.fab{display:none}
@@ -242,10 +242,10 @@ details[open]>summary::after{content:"–"}
 
 // ---------- Auswahlwerte (wie in der App: src/lib/werte.ts) ----------
 const PRIO = { NIEDRIG: "Niedrig", MITTEL: "Mittel", HOCH: "Hoch", DRINGEND: "Dringend" };
-const PRIO_FARBE = { NIEDRIG: "#8b8f96", MITTEL: "#8b8f96", HOCH: "#d9822b", DRINGEND: "#d6453d" };
+const PRIO_FARBE = { NIEDRIG: "#8b8f96", MITTEL: "#8b8f96", HOCH: "#c9a227", DRINGEND: "var(--rot)" };
 const PRIO_RANG = { DRINGEND: 0, HOCH: 1, MITTEL: 2, NIEDRIG: 3 };
 const STATUS = { ANGEFRAGT: "Angefragt", IN_PLANUNG: "In Planung", KONSTRUKTION: "Konstruktion", DRUCKBEREIT: "Druckbereit", IM_DRUCK: "Im Druck", NACHBEARBEITUNG: "Nachbearbeitung", FERTIG: "Fertig", GELIEFERT: "Geliefert", PAUSIERT: "Pausiert", ABGEBROCHEN: "Abgebrochen" };
-const STATUS_FARBE = { ANGEFRAGT: "#8b8f96", IN_PLANUNG: "#6c8ebf", KONSTRUKTION: "#5b9aa6", DRUCKBEREIT: "#c9a227", IM_DRUCK: "#f0862e", NACHBEARBEITUNG: "#b07d62", FERTIG: "#5f9e6e", GELIEFERT: "#4d8a5c", PAUSIERT: "#8b8f96", ABGEBROCHEN: "#c4554b" };
+const STATUS_FARBE = { ANGEFRAGT: "#8b8f96", IN_PLANUNG: "#6c8ebf", KONSTRUKTION: "#5b9aa6", DRUCKBEREIT: "#c9a227", IM_DRUCK: "var(--ak)", NACHBEARBEITUNG: "#b07d62", FERTIG: "#5f9e6e", GELIEFERT: "#4d8a5c", PAUSIERT: "#8b8f96", ABGEBROCHEN: "#b5655f" };
 const ERLEDIGT = ["FERTIG", "GELIEFERT", "ABGEBROCHEN"];
 const UMFANG = { KONSTRUKTION_UND_DRUCK: "Konstruktion + Druck", NUR_DRUCK: "Nur Druck" };
 const MATERIAL = ["PLA", "PETG", "ABS", "ASA", "TPU", "Sonstiges"];
