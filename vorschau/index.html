@@ -11,7 +11,10 @@
   catch { document.documentElement.dataset.theme = "dunkel"; }
 </script>
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="3D-Druck">
+<meta name="apple-mobile-web-app-title" content="Druckaufträge">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23111315'/%3E%3Csvg x='8' y='15' width='48' height='31' viewBox='17 0 351 228'%3E%3Cpath fill='%23e7e5e0' d='M17.41 0l71.661 228h54.537L192.16 60.886h.705L241.065 228H295.6L367.59 0H17.41z'/%3E%3C/svg%3E%3C/svg%3E">
 <title>Druckaufträge · Wuppertaler Bühnen</title>
 <!--
@@ -657,7 +660,16 @@ function seiteMehr() {
     .map(([w, n, s]) => `<button class="${aktuell === w ? "an" : ""}" data-klick="darstellung" data-wert="${w}" aria-pressed="${aktuell === w}">${sym(s, "k")}${n}</button>`).join("");
   return kopf("Mehr", "Einstellungen, Drucker und Listen") + karte("Darstellung", "sonne", `<div class="pad"><div class="segment">${darstellung}</div></div>`) + abschnitt("Drucker", druckerKarten()) +
     karte("Abteilungen", "stueck", liste("abteilungen", Z.abteilungen)) + karte("Kategorien der Maßbibliothek", "mass", liste("kategorien", Z.kategorien)) +
-    karte("Daten auf diesem Gerät", "info", `<div class="pad"><p class="klein gd" style="margin-bottom:1rem">Diese Vorschau speichert alles nur in diesem Browser. Wer den Browserverlauf oder die Websitedaten löscht, löscht auch diese Einträge.</p><button class="knopf3 rot" data-klick="alles-loeschen">${sym("muell", "k")}Alle Daten auf diesem Gerät löschen</button></div>`);
+    karte("Sichern und Laden", "kopie", `<div class="pad">
+      <p class="klein gd" style="margin-bottom:.9rem">Die Einträge liegen nur auf diesem Gerät. Sichere sie regelmäßig als Datei – z. B. in iCloud Drive oder per Mail. Mit „Sicherung laden“ holst du sie auf ein anderes Gerät oder nach einem Verlust zurück.</p>
+      <div class="chips" style="gap:.5rem"><button class="knopf2" data-klick="sichern">${sym("kopie", "k")}Sicherung erstellen</button>
+      <label class="knopf2" style="cursor:pointer">${sym("plus", "k")}Sicherung laden<input type="file" accept=".json,application/json" hidden data-sicherung></label></div>
+      <p class="klein gd" style="margin-top:.9rem">${Z.letzteSicherung ? "Letzte Sicherung: " + datumZeit(Z.letzteSicherung) : "Noch keine Sicherung erstellt."}</p>
+    </div>`) +
+    karte("Speicher auf diesem Gerät", "info", `<div class="pad">
+      <dl class="daten" style="margin:0 0 1rem"><div><dt>Geöffnet als</dt><dd>${istAppSymbol() ? "App-Symbol" : "Browser-Tab"}</dd></div><div><dt>Vor Löschen geschützt</dt><dd>${speicherSchutz.dauerhaft ? "ja" : speicherSchutz.dauerhaft === false ? "nicht garantiert" : "–"}</dd></div></dl>
+      ${istAppSymbol() ? "" : `<p class="klein gd" style="margin-bottom:1rem">Tipp fürs iPhone: In Safari auf <b>Teilen → Zum Home-Bildschirm</b> und die App ab dann nur über das Symbol öffnen. Achtung: Das Symbol hat einen eigenen Speicher – Einträge aus diesem Tab vorher per Sicherung übertragen.</p>`}
+      <button class="knopf3 rot" data-klick="alles-loeschen">${sym("muell", "k")}Alle Daten auf diesem Gerät löschen</button></div>`);
 }
 
 // ---------- Drucker wählen (für „Im Druck“) und kurze Meldungen ----------
@@ -852,6 +864,11 @@ const KLICKS = {
     return "#/bibliothek";
   },
   "filter-status"(d) { filter.status = d.wert; },
+  async sichern() {
+    if (!(await sicherungErstellen())) return false;
+    Z.letzteSicherung = new Date().toISOString();
+    melden("Sicherung erstellt");
+  },
   darstellung(d) {
     document.documentElement.dataset.theme = d.wert;
     try { localStorage.setItem("darstellung", d.wert); } catch { /* nur für diese Sitzung */ }
@@ -895,6 +912,10 @@ document.addEventListener("change", async (ereignis) => {
     await sichern();
     anzeigen();
     melden(`${a.nummer}: ${STATUS[a.status]}`);
+  } else if ("sicherung" in el.dataset) {
+    const datei = el.files[0];
+    el.value = "";
+    if (datei && (await sicherungLaden(datei))) { gehe("#/"); melden("Sicherung geladen"); }
   } else if (el.dataset.neu) {
     const feld = el.form.elements[el.dataset.neu];
     feld.hidden = el.value !== "neu";
@@ -935,6 +956,55 @@ function farbeLeisteSetzen() {
 }
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", farbeLeisteSetzen);
 
+// ---------- Sichern und Laden ----------
+// Eine Datei mit allen Einträgen und Fotos (als Text kodiert). Damit lassen sich Daten sichern,
+// auf ein anderes Gerät übertragen oder nach einem Verlust wiederherstellen.
+const blobZuText = (blob) => new Promise((ok) => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(blob); });
+async function sicherungErstellen() {
+  const bilder = {};
+  const ids = [...Z.auftraege, ...Z.eintraege].flatMap((x) => x.bilder);
+  for (const id of ids) { const blob = await lesen("bild:" + id); if (blob) bilder[id] = await blobZuText(blob); }
+  const inhalt = JSON.stringify({ art: "druckauftraege-sicherung", version: 1, erstellt: new Date().toISOString(), zustand: Z, bilder });
+  const name = `Druckauftraege-Sicherung-${heute()}.json`;
+  const datei = new File([inhalt], name, { type: "application/json" });
+  // Am Handy über „Teilen“ (In Dateien sichern, Mail, AirDrop), sonst als Download.
+  if (navigator.canShare?.({ files: [datei] })) {
+    try { await navigator.share({ files: [datei], title: name }); return true; }
+    catch (fehler) { if (fehler.name === "AbortError") return false; }
+  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(datei);
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+  return true;
+}
+async function sicherungLaden(datei) {
+  let daten;
+  try { daten = JSON.parse(await datei.text()); } catch { daten = null; }
+  if (daten?.art !== "druckauftraege-sicherung" || !daten.zustand) { alert("Diese Datei ist keine Sicherung der Druckaufträge."); return false; }
+  const z = daten.zustand;
+  if (!confirm(`Sicherung vom ${datumZeit(daten.erstellt)} laden?
+
+${z.auftraege.length} Aufträge, ${z.stuecke.length} Stücke, ${z.eintraege.length} Bibliothekseinträge.
+
+Alle Einträge auf diesem Gerät werden dabei ersetzt.`)) return false;
+  await kv("readwrite", (s) => s.clear());
+  bildUrls.clear();
+  for (const [id, text] of Object.entries(daten.bilder || {})) await schreiben("bild:" + id, await (await fetch(text)).blob());
+  Z = { ...START(), ...z };
+  await sichern();
+  return true;
+}
+// Bittet den Browser, die Daten nicht von selbst zu löschen. Safari entscheidet selbst, ob er zustimmt.
+const speicherSchutz = { dauerhaft: null };
+async function dauerhaftAnfordern() {
+  try {
+    speicherSchutz.dauerhaft = (await navigator.storage?.persisted?.()) || (await navigator.storage?.persist?.()) || false;
+  } catch { speicherSchutz.dauerhaft = false; }
+}
+const istAppSymbol = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+
 // ---------- Vorbelegte Bibliothekseinträge ----------
 // Werte aus „Dimensions & Design Guidelines – Metric Size Inserts“ von CNC Kitchen (cnckitchen.store),
 // übernommen am 14.10.2026. D2 = Bohrungsdurchmesser, Sackloch mindestens L + 1 mm tief.
@@ -971,6 +1041,7 @@ lesen("zustand").catch(() => null).then((gespeichert) => {
   if (vorbelegen()) sichern();
   farbeLeisteSetzen();
   anzeigen();
+  dauerhaftAnfordern().then(() => { if (location.hash.startsWith("#/mehr")) anzeigen(); });
 });
 </script>
 </body>
